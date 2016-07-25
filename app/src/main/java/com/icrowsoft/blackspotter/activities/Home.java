@@ -1,8 +1,10 @@
 package com.icrowsoft.blackspotter.activities;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -10,6 +12,7 @@ import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Gravity;
+import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
@@ -17,6 +20,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.GoogleMap;
@@ -96,6 +100,17 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         } catch (Exception ex) {
             // Ignore
         }
+
+        // get the accuracy TextView
+        TextView accuracy = (TextView) findViewById(R.id.lbl_accuracy);
+        accuracy.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                // start Voice listener
+                startActivity(new Intent(getBaseContext(), VoiceListener.class));
+            }
+        });
+
     }
 
     /**
@@ -206,6 +221,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 .setDuration(400)
                 .setInterpolator(new LinearInterpolator())
                 .start();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu_home, menu);
+        return super.onCreateOptionsMenu(menu);
     }
 
     @Override
