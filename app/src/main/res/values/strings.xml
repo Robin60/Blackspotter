@@ -1,0 +1,175 @@
+<resources>
+    <string name="app_name">Blackspotter</string>
+    <string name="title_activity_home">Blackspotter</string>
+
+    <string name="my_json">
+        <![CDATA[
+        {\"results\":[{\"address_components\":[{\"long_name\":\"Eldoret - Nakuru Road\",\"short_name\":\"A 104\",\"types\":[\"route\"]},{\"long_name\":\"Timboroa\",\"short_name\":\"Timboroa\",\"types\":[\"locality\",\"political\"]},{\"long_name\":\"Uasin Gishu\",\"short_name\":\"Uasin Gishu\",\"types\":[\"administrative_area_level_1\",\"political\"]},{\"long_name\":\"Kenya\",\"short_name\":\"KE\",\"types\":[\"country\",\"political\"]}],\"formatted_address\":\"Eldoret - Nakuru Rd, Timboroa, Kenya\",\"geometry\":{\"bounds\":{\"northeast\":{\"lat\":0.0834203,\"lng\":35.5301448},\"southwest\":{\"lat\":0.0819448,\"lng\":35.5212544}},\"location\":{\"lat\":0.08292949999999999,\"lng\":35.5256713},\"location_type\":\"GEOMETRIC_CENTER\",\"viewport\":{\"northeast\":{\"lat\":0.08403153029150202,\"lng\":35.5301448},\"southwest\":{\"lat\":0.08133356970849796,\"lng\":35.5212544}}},\"place_id\":\"ChIJv4GTGOOYgBcRnDOGNmca_dg\",\"types\":[\"route\"]},{\"address_components\":[{\"long_name\":\"Timboroa\",\"short_name\":\"Timboroa\",\"types\":[\"locality\",\"political\"]},{\"long_name\":\"Uasin Gishu\",\"short_name\":\"Uasin Gishu\",\"types\":[\"administrative_area_level_1\",\"political\"]},{\"long_name\":\"Kenya\",\"short_name\":\"KE\",\"types\":[\"country\",\"political\"]}],\"formatted_address\":\"Timboroa, Kenya\",\"geometry\":{\"bounds\":{\"northeast\":{\"lat\":0.0899504,\"lng\":35.5356217},\"southwest\":{\"lat\":0.07810589999999999,\"lng\":35.5193137}},\"location\":{\"lat\":0.0854953,\"lng\":35.5302127},\"location_type\":\"APPROXIMATE\",\"viewport\":{\"northeast\":{\"lat\":0.0899504,\"lng\":35.5356217},\"southwest\":{\"lat\":0.07810589999999999,\"lng\":35.5193137}}},\"place_id\":\"ChIJi7WZYdqYgBcRAOgP5QCf5e8\",\"types\":[\"locality\",\"political\"]},{\"address_components\":[{\"long_name\":\"Uasin Gishu\",\"short_name\":\"Uasin Gishu\",\"types\":[\"administrative_area_level_1\",\"political\"]},{\"long_name\":\"Kenya\",\"short_name\":\"KE\",\"types\":[\"country\",\"political\"]}],\"formatted_address\":\"Uasin Gishu, Kenya\",\"geometry\":{\"bounds\":{\"northeast\":{\"lat\":0.95051,\"lng\":35.59672},\"southwest\":{\"lat\":0.010163,\"lng\":34.857759}},\"location\":{\"lat\":0.5527638000000001,\"lng\":35.3027226},\"location_type\":\"APPROXIMATE\",\"viewport\":{\"northeast\":{\"lat\":0.95051,\"lng\":35.59672},\"southwest\":{\"lat\":0.010163,\"lng\":34.857759}}},\"place_id\":\"ChIJu2Cj2i4AgRcRK-jHMvRD0ac\",\"types\":[\"administrative_area_level_1\",\"political\"]},{\"address_components\":[{\"long_name\":\"Kenya\",\"short_name\":\"KE\",\"types\":[\"country\",\"political\"]}],\"formatted_address\":\"Kenya\",\"geometry\":{\"bounds\":{\"northeast\":{\"lat\":5.033420899999999,\"lng\":41.9068957},\"southwest\":{\"lat\":-4.679658499999999,\"lng\":33.90982109999999}},\"location\":{\"lat\":-0.023559,\"lng\":37.906193},\"location_type\":\"APPROXIMATE\",\"viewport\":{\"northeast\":{\"lat\":5.033420899999999,\"lng\":41.9068957},\"southwest\":{\"lat\":-4.679658499999999,\"lng\":33.90982109999999}}},\"place_id\":\"ChIJD5BQg9CAJxgR2W2XobAOO0A\",\"types\":[\"country\",\"political\"]}],\"status\":\"OK\"}
+        ]]></string>
+
+    <!-- names -->
+    <string-array name="black_spot_names">
+        <item>Westlands museum road</item>
+        <item>Waiyaki Way Near Kangemi Fly Over</item>
+        <item>Kiganjo-Narumuo Rd</item>
+        <item>Kiriani-Muranga rd</item>
+        <item>Thika Blue post</item>
+        <item>Makutan Embu road</item>
+        <item>Kiambu \u2013 Muthaiga Road</item>
+        <item>Gilgil - Mbaruk Road Section</item>
+        <item>Molo G.S.U Camp</item>
+        <item>Timboroa - Burnt Forest Section</item>
+        <item>Nyeri \u2013 Nyahururu Wiyumiririe Area</item>
+        <item>Kericho - Kaitui Section</item>
+        <item>Nanyuki Isiolo Junction</item>
+        <item>Wundanyi - Mwatate Road Section</item>
+        <item>Kilifi - Vipingo Road Section</item>
+        <item>Saba-Saba Lights</item>
+        <item>Kwale Matuga Junction Road Section</item>
+        <item>Mbale - Vihiga Road Section</item>
+        <item>Kakamega Chavakali Road Section</item>
+        <item>Kakamega \u2013 Mumias Rd \u2013 Makunga</item>
+        <item>Bungoma \u2013 Eldoret \u2013 Chemoi</item>
+        <item>Kitale Webuye \u2013 Lugulu Misikhu</item>
+        <item>Gucha Bridge</item>
+        <item>Migori Township</item>
+        <item>Ogembo Nyanguso Road</item>
+        <item>Mwembe Area Kisii Town</item>
+        <item>Kisii Daraja Mbili</item>
+        <item>Garissa Madogo - Kbc Station</item>
+        <item>A36 Southampton - Salisbury</item>
+        <item>A37 between Dorchester and Yeovil</item>
+        <item>A4123 Wolverhampton Road Blackheath West Midlands</item>
+        <item>A354 Dorchester Road</item>
+        <item>Dr Bhahbha Marg crossing</item>
+        <item>Sarai Kale Khan</item>
+        <item>Kashmere Gate chowk (Morigate)</item>
+        <item>Mukundpur Chowk</item>
+        <item>Shani Mandir</item>
+        <item>Punjabi Bagh Chowk</item>
+        <item>Accra-Kumasi (N6)</item>
+        <item>Accra-Takoradi (N1)</item>
+        <item>Kumasi-Anwiankwanta (N10)</item>
+        <item>Anwiankwanta-Yamoranza Junction (N8)</item>
+        <item>Accra-Takoradi corridor</item>
+        <item>Clearwater - US-19 and Sunset Point Rd</item>
+        <item>Clearwater - US-19 N and Drew St</item>
+        <item>Bronx NY</item>
+        <item>Fort Lauderdale - W Commercial Blvd and N University Dr</item>
+        <item>Fort Lauderdale - W Sunrise Blvd and N University Dr</item>
+        <item>Frisco - State Highway 121 and Preston Rd</item>
+        <item>Hollywood - S Flamingo Rd and Pines Blvd</item>
+        <item>Boston MA</item>
+
+    </string-array>
+
+    <!-- Latitudes -->
+    <string-array name="black_spot_latitudes">
+        <item>-1.272759</item>
+        <item>-1.269275</item>
+        <item>-0.393489</item>
+        <item>-0.600052</item>
+        <item>-1.038757</item>
+        <item>-0.761660</item>
+        <item>-1.205137</item>
+        <item>-0.492273</item>
+        <item>49.947446</item>
+        <item>0.085495</item>
+        <item>-0.427781</item>
+        <item>-0.368897</item>
+        <item>0.007441</item>
+        <item>-3.398223</item>
+        <item>-3.510651</item>
+        <item>4.248079</item>
+        <item>-4.181611</item>
+        <item>1.078444</item>
+        <item>0.282731</item>
+        <item>0.333222</item>
+        <item>0.569525</item>
+        <item>0.718642</item>
+        <item>41.018323</item>
+        <item>-1.070698</item>
+        <item>-0.800300</item>
+        <item>-0.677334</item>
+        <item>-0.663566</item>
+        <item>-0.453229</item>
+        <item>51.139457</item>
+        <item>50.942061</item>
+        <item>52.489833</item>
+        <item>32.917084</item>
+        <item>28.665706</item>
+        <item>28.590610</item>
+        <item>28.666388</item>
+        <item>28.732166</item>
+        <item>21.143778</item>
+        <item>28.673533</item>
+        <item>6.688038</item>
+        <item>5.353009</item>
+        <item>6.453314</item>
+        <item>5.843752</item>
+        <item>5.603717</item>
+        <item>27.990298</item>
+        <item>27.966009</item>
+        <item>40.837049</item>
+        <item>26.193712</item>
+        <item>26.341604</item>
+        <item>33.097913</item>
+        <item>26.036487</item>
+        <item>42.360082</item>
+    </string-array>
+    <!-- Longitudes -->
+    <string-array name="black_spot_longitdes">
+        <item>36.813803</item>
+        <item>36.744238</item>
+        <item>37.002453</item>
+        <item>36.956794</item>
+        <item>37.083375</item>
+        <item>37.274657</item>
+        <item>36.781007</item>
+        <item>36.317299</item>
+        <item>19.273203</item>
+        <item>35.530213</item>
+        <item>36.943359</item>
+        <item>35.286286</item>
+        <item>37.07223</item>
+        <item>38.363984</item>
+        <item>39.909327</item>
+        <item>117.917211</item>
+        <item>39.460561</item>
+        <item>34.181006</item>
+        <item>34.751863</item>
+        <item>34.487742</item>
+        <item>34.558377</item>
+        <item>34.754743</item>
+        <item>110.063134</item>
+        <item>34.475271</item>
+        <item>34.725731</item>
+        <item>34.779603</item>
+        <item>34.764394</item>
+        <item>39.646099</item>
+        <item>-1.951472</item>
+        <item>-2.633308</item>
+        <item>-2.019776</item>
+        <item>-80.112703</item>
+        <item>77.326589</item>
+        <item>77.260562</item>
+        <item>77.221586</item>
+        <item>77.18374</item>
+        <item>79.087634</item>
+        <item>77.140297</item>
+        <item>-1.589594</item>
+        <item>-0.730505</item>
+        <item>-1.588701</item>
+        <item>-1.328402</item>
+        <item>-0.186964</item>
+        <item>-82.795673</item>
+        <item>-82.803707</item>
+        <item>-73.86543</item>
+        <item>-80.252152</item>
+        <item>-80.251174</item>
+        <item>-96.805093</item>
+        <item>-80.312673</item>
+        <item>-71.05888</item>
+    </string-array>
+
+</resources>
