@@ -6,8 +6,8 @@ android {
 
     defaultConfig {
         applicationId "com.icrowsoft.blackspotter"
-        minSdkVersion 11
-        targetSdkVersion 23
+        minSdkVersion 14
+        targetSdkVersion 24
         versionCode 1
         versionName "1.0"
     }
@@ -22,13 +22,13 @@ android {
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:24.0.0'
+    compile 'com.android.support:appcompat-v7:24.1.1'
     compile 'com.google.android.gms:play-services-maps:9.2.1'
     compile 'com.google.firebase:firebase-core:9.2.1'
     compile 'com.google.firebase:firebase-database:9.2.1'
     compile 'com.google.firebase:firebase-ads:9.2.1'
     compile 'com.koushikdutta.ion:ion:2.1.8'
-    compile 'com.android.support:design:24.0.0'
+    compile 'com.android.support:design:24.1.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

@@ -3,8 +3,11 @@ package com.icrowsoft.blackspotter.activities;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.location.Location;
+import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
+import android.speech.RecognizerIntent;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -16,6 +19,7 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
+import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LinearInterpolator;
@@ -30,10 +34,10 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.icrowsoft.blackspotter.R;
-import com.icrowsoft.blackspotter.SyncDB.sync_DB_offline;
-import com.icrowsoft.blackspotter.SyncDB.sync_DB_online;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
 
@@ -41,9 +45,11 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private String[] names, lats, lons;
     private Animation fab_close;
     private Animation fab_open;
-    private FloatingActionButton fab, fab1, fab2;
+    private FloatingActionButton fab, fab1, fab2, fab_fullscreen, fab_speak;
     private boolean fab_clicked;
     private FrameLayout mInterceptorFrame;
+    int REQUEST_CODE = 7777;
+    private TextView lbl_accuracy;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,11 +59,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // TODO: 7/26/16 enable the ansyc tasks below
         // syc database offline
-        new sync_DB_offline(getBaseContext()).execute();
+//        new sync_DB_offline(getBaseContext()).execute();
 
         // syc database online
-        new sync_DB_online(getBaseContext()).execute();
+//        new sync_DB_online(getBaseContext()).execute();
 
         // fetch from resources
         names = getResources().getStringArray(R.array.black_spot_names);
@@ -82,12 +89,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             }
         });
 
-        // get FAB animations
-        fab_close = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_close);
-        fab_open = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_open);
-
-        // handle FABs (floating action buttons)
-        handleFABs();
 
         // force actionbar overflow
         try {
@@ -101,15 +102,26 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             // Ignore
         }
 
-        // get the accuracy TextView
-        TextView accuracy = (TextView) findViewById(R.id.lbl_accuracy);
-        accuracy.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // start Voice listener
-                startActivity(new Intent(getBaseContext(), VoiceListener.class));
-            }
-        });
+        // get text views
+        lbl_accuracy = (TextView) findViewById(R.id.lbl_accuracy);
+        // get FABs
+        fab = (FloatingActionButton) findViewById(R.id.floating_atcion_bar);
+        fab1 = (FloatingActionButton) findViewById(R.id.fab1);
+        fab2 = (FloatingActionButton) findViewById(R.id.fab2);
+        fab_fullscreen = (FloatingActionButton) findViewById(R.id.fab_fullscreen);
+        fab_speak = (FloatingActionButton) findViewById(R.id.fab_speak);
+
+        // set onclick listener
+        fab_fullscreen.setOnClickListener(this);
+        fab_speak.setOnClickListener(this);
+
+        // get FAB animations
+        fab_close = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_close);
+        fab_open = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_open);
+
+        // handle FABs (floating action buttons)
+        handleFABs();
+
 
     }
 
@@ -157,16 +169,30 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             point_on_map.position(new_point);
             mMap.addMarker(point_on_map);
         }
+
+        // trigger my location request
+        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                float accuracy = location.getAccuracy();
+
+                if (accuracy < 40) {
+                    lbl_accuracy.setTextColor(getResources().getColor(R.color.green));
+                } else {
+                    lbl_accuracy.setTextColor(getResources().getColor(R.color.red));
+                }
+
+                // unhide lbl_accuracy
+                lbl_accuracy.setVisibility(View.VISIBLE);
+
+                // display lbl_accuracy
+                lbl_accuracy.setText("Accuracy: " + accuracy);
+            }
+        });
     }
 
 
     private void handleFABs() {
-
-        // link to FABs
-        fab = (FloatingActionButton) findViewById(R.id.floating_atcion_bar);
-        fab1 = (FloatingActionButton) findViewById(R.id.fab1);
-        fab2 = (FloatingActionButton) findViewById(R.id.fab2);
-
         // add click events
         fab1.setOnClickListener(this);
         fab2.setOnClickListener(this);
@@ -223,6 +249,41 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 .start();
     }
 
+    /**
+     * Fire an intent to start the voice recognition activity.
+     */
+    private void startVoiceRecognitionActivity() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+//        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
+//        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Voice recognition Demo...");
+        startActivityForResult(intent, REQUEST_CODE);
+    }
+
+    private void toggleFullscreen() {
+        WindowManager.LayoutParams attrs = getWindow().getAttributes();
+        attrs.flags ^= WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        getWindow().setAttributes(attrs);
+
+        // get full screen status
+        boolean fullScreen = (getWindow().getAttributes().flags & WindowManager.LayoutParams.FLAG_FULLSCREEN) != 0;
+
+        // change icon
+        if (fullScreen) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                fab_fullscreen.setImageDrawable(getResources().getDrawable(R.drawable.collapse, getBaseContext().getTheme()));
+            } else {
+                fab_fullscreen.setImageDrawable(getResources().getDrawable(R.drawable.collapse));
+            }
+        } else {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                fab_fullscreen.setImageDrawable(getResources().getDrawable(R.drawable.expand, getBaseContext().getTheme()));
+            } else {
+                fab_fullscreen.setImageDrawable(getResources().getDrawable(R.drawable.expand));
+            }
+        }
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_home, menu);
@@ -233,17 +294,53 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab1:
+                // hide fabs
                 animateFAB();
                 break;
             case R.id.fab2:
                 // hide fabs
                 animateFAB();
                 break;
+            case R.id.fab_fullscreen:
+                // toogle fullscreen mode
+                toggleFullscreen();
+                break;
+            case R.id.fab_speak:
+                // Check if speech recognition is supported
+                PackageManager pm = getPackageManager();
+                List<ResolveInfo> activities = pm.queryIntentActivities(
+                        new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+                if (activities.size() == 0) {
+                    Snackbar.make(fab, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
+                } else {
+                    // start voice recognition activity
+                    startVoiceRecognitionActivity();
+                }
+                break;
         }
     }
 
+    /**
+     * Handle clicks on markers on the map
+     */
     @Override
     public void onInfoWindowClick(Marker marker) {
-        Snackbar.make(mInterceptorFrame, "" + marker.getTitle() + " clicked", Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(mInterceptorFrame, marker.getTitle() + " clicked", Snackbar.LENGTH_SHORT).show();
+    }
+
+    /**
+     * Handle the results from the voice recognition activity.
+     */
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == REQUEST_CODE && resultCode == RESULT_OK) {
+
+            // get String values the recognition engine thought it heard
+            ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+            Toast.makeText(getBaseContext(), "Received: " + matches.get(0), Toast.LENGTH_SHORT).show();
+        }
+
+        super.onActivityResult(requestCode, resultCode, data);
     }
 }
