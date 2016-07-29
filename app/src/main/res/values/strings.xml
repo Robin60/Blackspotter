@@ -2,7 +2,7 @@
     <string name="app_name">Blackspotter</string>
     <string name="title_activity_home">Blackspotter</string>
 
-    <string-array name="caution_names">
+    <string-array name="danger_zone_names">
         <item>Mutithi section</item>
         <item>Odumasi</item>
         <item>Nakuru-Eldoret highway</item>
@@ -16,7 +16,7 @@
     </string-array>
 
     <!-- Latitudes -->
-    <string-array name="caution_latitudes">
+    <string-array name="danger_zone_latitudes">
         <item>-1.268715 </item>
         <item>7.545669</item>
         <item>-0.303099</item>
@@ -29,7 +29,7 @@
         <item>40.916927</item>
     </string-array>
     <!-- Longitudes -->
-    <string-array name="caution_longitdes">
+    <string-array name="danger_zone_longitdes">
         <item>36.809743</item>
         <item>-1.736848</item>
         <item>36.080026</item>

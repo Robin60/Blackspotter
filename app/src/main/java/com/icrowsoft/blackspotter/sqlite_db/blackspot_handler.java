@@ -120,7 +120,7 @@ public class blackspot_handler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        Log.i("Kibet", "COUNT >> " + cursor.getCount());
+        Log.i("Kibet", "COUNT >> " + cursor.getCount());// TODO: 7/29/16 remove this
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {

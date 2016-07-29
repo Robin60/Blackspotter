@@ -11,14 +11,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="150dp"
+        android:layout_marginBottom="120dp"
         android:layout_marginRight="12dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
-        android:src="@android:drawable/ic_menu_upload"
-        android:tint="@color/fab_icons"
+        android:src="@drawable/black_spot"
+        android:tint="@color/icons"
         android:visibility="invisible"
-        app:backgroundTint="@color/fab_background"
+        app:backgroundTint="?colorPrimary"
         app:fabSize="mini" />
 
     <android.support.design.widget.FloatingActionButton
@@ -26,14 +26,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="100dp"
+        android:layout_marginBottom="70dp"
         android:layout_marginRight="12dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
-        android:src="@android:drawable/ic_dialog_email"
-        android:tint="@color/fab_icons"
+        android:src="@drawable/caution"
+        android:tint="@color/icons"
         android:visibility="invisible"
-        app:backgroundTint="@color/fab_background"
+        app:backgroundTint="?colorPrimary"
         app:fabSize="mini" />
 
     <android.support.design.widget.FloatingActionButton
@@ -41,12 +41,12 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="4dp"
         android:layout_marginRight="6dp"
         android:elevation="2dp"
         android:src="@android:drawable/ic_input_add"
-        android:tint="@color/fab_icons"
-        app:backgroundTint="@color/fab_background"
+        android:tint="@color/icons"
+        app:backgroundTint="?colorPrimary"
         app:borderWidth="0dp"
         app:fabSize="normal" />
 
@@ -55,13 +55,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|start"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="6dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
         android:src="@drawable/expand"
-        android:tint="@color/fab_icons"
-        app:backgroundTint="@color/fab_background"
+        android:tint="@color/icons"
+        app:backgroundTint="?colorPrimary"
         app:fabSize="normal" />
 
     <android.support.design.widget.FloatingActionButton
@@ -69,13 +69,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center|bottom"
-        android:layout_marginBottom="30dp"
+        android:layout_marginBottom="4dp"
         android:layout_marginLeft="12dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
         android:src="@android:drawable/ic_btn_speak_now"
-        android:tint="@color/fab_icons"
-        app:backgroundTint="@color/fab_background"
+        android:tint="@color/icons"
+        app:backgroundTint="?colorPrimary"
         app:fabSize="mini" />
 
 </android.support.design.widget.CoordinatorLayout>

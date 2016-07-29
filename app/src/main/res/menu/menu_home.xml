@@ -6,5 +6,5 @@
         android:icon="@android:drawable/ic_menu_manage"
         android:menuCategory="system"
         android:title="Settings"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="never" />
 </menu>

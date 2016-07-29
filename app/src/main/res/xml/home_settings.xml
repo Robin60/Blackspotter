@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="Notifications">
+        <CheckBoxPreference
+            android:id="@+id/allow_notifications"
+            android:defaultValue="true"
+            android:key="allow_notifications"
+            android:summaryOff="Notifications OFF"
+            android:summaryOn="Notifications ON"
+            android:title="Notifications" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="chk_metres"
+            android:summary="Distance in meters"
+            android:title="Metres" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="chk_yards"
+            android:summary="Distance in  yards"
+            android:title="Yards" />
+        <EditTextPreference
+            android:id="@+id/distance_to_notify"
+            android:key="distance_to_notify"
+            android:summary="Distance within which to notify"
+            android:title="Notify distance" />
+        <RingtonePreference
+            android:defaultValue="content://settings/system/notification_sound"
+            android:key="notif_sound"
+            android:ringtoneType="notification"
+            android:showSilent="false"
+            android:summary="Select unique warning sound"
+            android:title="Warning sound" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Reminders">
+        <CheckBoxPreference
+            android:id="@+id/allow_reminders"
+            android:defaultValue="true"
+            android:key="allow_reminders"
+            android:summaryOff="Reminders OFF"
+            android:summaryOn="Reminders ON"
+            android:title="Reminders" />
+        <EditTextPreference
+            android:id="@+id/reminder_interval"
+            android:key="reminder_interval"
+            android:summary="Time to repeat reminder (mins)"
+            android:title="Reminder Intervals" />
+    </PreferenceCategory>
+</PreferenceScreen>
