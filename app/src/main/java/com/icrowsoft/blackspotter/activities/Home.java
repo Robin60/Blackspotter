@@ -60,6 +60,7 @@ import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.roundImage.CreateMyRoundedDrawable;
 import com.icrowsoft.blackspotter.roundImage.TextDrawable;
+import com.icrowsoft.blackspotter.services.Notifier;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
 import org.json.JSONObject;
@@ -221,6 +222,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 animateFAB();
             }
         });
+
+        // start locator service
+        startService(new Intent(getBaseContext(), Notifier.class));
     }
 
     /**
@@ -533,7 +537,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 boolean isLocationOnPath = PolyUtil.isLocationOnPath(latlong, polyline_points, true, tolerance);
 
                 if (isLocationOnPath) {
-                    Log.i("Kibet", "Found: " + description);
 
                     // know the type of point we are dealing with
                     if (description.equals("Black spot")) {
@@ -543,17 +546,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                     } else if (description.equals("Accident scene")) {
                         accident_scene_count += 1;
                     }
-                } else {
-                    Log.i("Kibet", "-- Skipped");
                 }
             }
             // update UI
             lbl_blackspots.setText("B-S: " + blackspot_count);
             lbl_accidents.setText("A-S: " + accident_scene_count);
             lbl_danger_zones.setText("D-Z: " + danger_zone_count);
-
-
-//            return isLocationOnEdgeOrPath(point, polyline, false, geodesic, tolerance);
         }
     }
 

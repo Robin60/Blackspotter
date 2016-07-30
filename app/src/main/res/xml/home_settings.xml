@@ -20,8 +20,9 @@
             android:title="Yards" />
         <EditTextPreference
             android:id="@+id/distance_to_notify"
+            android:defaultValue="500"
             android:key="distance_to_notify"
-            android:summary="Distance within which to notify"
+            android:summary="Distance within which to notify(Metres)"
             android:title="Notify distance" />
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"
@@ -41,6 +42,7 @@
             android:title="Reminders" />
         <EditTextPreference
             android:id="@+id/reminder_interval"
+            android:defaultValue="15"
             android:key="reminder_interval"
             android:summary="Time to repeat reminder (mins)"
             android:title="Reminder Intervals" />

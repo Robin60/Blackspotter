@@ -39,5 +39,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.Home_Prefence" />
+
+        <service android:name=".services.Notifier" />
     </application>
 </manifest>
