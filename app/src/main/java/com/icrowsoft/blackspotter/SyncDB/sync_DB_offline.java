@@ -5,14 +5,14 @@ import android.os.AsyncTask;
 
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
-import com.icrowsoft.blackspotter.sqlite_db.blackspot_handler;
+import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
 /**
  * Created by teardrops on 7/17/16.
  */
 public class sync_DB_offline extends AsyncTask<String, String, String> {
     private final Context _context;
-    private blackspot_handler my_db;
+    private BlackspotDBHandler my_db;
 
     public sync_DB_offline(Context context) {
         this._context = context;
@@ -21,7 +21,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
     @Override
     protected String doInBackground(String... strings) {
         // get database reference
-        my_db = new blackspot_handler(_context);
+        my_db = new BlackspotDBHandler(_context);
 
         // sync xml resources into DB
         sync_database_offline();
@@ -46,7 +46,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
             my_point.setLatitude(black_spots_lats[i]);
             my_point.setLongitude(black_spots_lons[i]);
             my_point.setCases(0);
-            my_point.setLastModified(0);
+            my_point.setLastModified("" + System.currentTimeMillis());
             my_point.setCountry("");
             my_point.setDescription("Black spot");
 
@@ -60,9 +60,9 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
             my_point.setLatitude(danger_zone_lats[i]);
             my_point.setLongitude(danger_zone_lons[i]);
             my_point.setCases(0);
-            my_point.setLastModified(0);
+            my_point.setLastModified("" + System.currentTimeMillis());
             my_point.setCountry("");
-            my_point.setDescription("Danger Zone");
+            my_point.setDescription("Danger zone");
 
             insert_into_table(my_point);
         }

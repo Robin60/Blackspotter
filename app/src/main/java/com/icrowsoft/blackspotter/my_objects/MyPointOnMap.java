@@ -10,7 +10,7 @@ public class MyPointOnMap {
     private  String _lat;
     private  String _lon;
     private  int _cases;
-    private  long _last_modified;
+    private  String _last_modified;
     private  String _country;
 
         // Empty constructor
@@ -19,7 +19,7 @@ public class MyPointOnMap {
     }
 
     // constructor
-    public MyPointOnMap(String name, String lat,String lon,int cases,long last_modified,String description,String country){
+    public MyPointOnMap(String name, String lat,String lon,int cases,String last_modified,String description,String country){
         this._name = name;
         this._lat = lat;
         this._lon = lon;
@@ -75,12 +75,12 @@ public class MyPointOnMap {
     }
 
     // getting last_modified
-    public long getLastModified(){
+    public String getLastModified(){
         return this._last_modified;
     }
 
     // setting last_modified
-    public void setLastModified(long last_modified){
+    public void setLastModified(String last_modified){
         this._last_modified = last_modified;
     }
 

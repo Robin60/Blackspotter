@@ -39,21 +39,52 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="2dp"
+                android:layout_weight="1"
                 android:gravity="center_horizontal"
                 android:padding="2dp"
                 android:text="Accuracy"
+                android:textColor="@android:color/holo_green_dark"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/lbl_blackspots"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:padding="2dp"
+                android:text="Blackspots"
                 android:textColor="@color/primary_text"
                 android:textSize="13sp"
                 android:textStyle="bold" />
+
             <TextView
                 android:id="@+id/lbl_accidents"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="2dp"
+                android:layout_weight="1"
                 android:gravity="center_horizontal"
                 android:padding="2dp"
                 android:text="Accidents"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/lbl_danger_zones"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:gravity="center_horizontal"
+                android:padding="2dp"
+                android:text="Danger Zones"
                 android:textColor="@color/primary_text"
                 android:textSize="13sp"
                 android:textStyle="bold" />
@@ -69,12 +100,12 @@
             tools:context=".activities.Home" />
     </LinearLayout>
 
-    <include layout="@layout/floating_menu" />
-
     <FrameLayout
         android:id="@+id/fl_interceptor"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:descendantFocusability="blocksDescendants" />
+
+    <include layout="@layout/floating_menu" />
 
 </android.support.design.widget.CoordinatorLayout>

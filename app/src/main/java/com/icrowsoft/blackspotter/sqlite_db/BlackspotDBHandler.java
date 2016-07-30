@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by teardrops on 7/17/16.
  */
-public class blackspot_handler extends SQLiteOpenHelper {
+public class BlackspotDBHandler extends SQLiteOpenHelper {
 
     // All Static variables
     // Database Version
@@ -36,7 +36,7 @@ public class blackspot_handler extends SQLiteOpenHelper {
     private static final String KEY_COUNTRY = "country";
     private static final String KEY_DESCRIPTION = "description";
 
-    public blackspot_handler(Context context) {
+    public BlackspotDBHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
@@ -69,23 +69,28 @@ public class blackspot_handler extends SQLiteOpenHelper {
      */
 
     // Adding new blackspot
-    public long addMyPoinOnMap(MyPointOnMap my_point) {
-        SQLiteDatabase db = this.getWritableDatabase();
+    public void addMyPoinOnMap(MyPointOnMap my_point) {
 
-        ContentValues values = new ContentValues();
-        values.put(KEY_NAME, my_point.getName()); // Contact Name
-        values.put(KEY_LATITUDE, my_point.getLatitude());
-        values.put(KEY_LONGITUDE, my_point.getLongitude());
-        values.put(KEY_CASES, my_point.getCases());
-        values.put(KEY_LAST_MODIFIED, my_point.getLastModified());
-        values.put(KEY_DESCRIPTION, my_point.getDescription());
-        values.put(KEY_COUNTRY, my_point.getCountry());
+        // check if duplicate
+        boolean found = getPoint(my_point.getLatitude());
 
-        // Inserting Row
-        long aa = db.insert(TABLE_BLACKSPOTS, null, values);
-        db.close(); // Closing database connection
+        // proceed if not found
+        if (!found) {
+            SQLiteDatabase db = this.getWritableDatabase();
 
-        return aa;
+            ContentValues values = new ContentValues();
+            values.put(KEY_NAME, my_point.getName()); // Contact Name
+            values.put(KEY_LATITUDE, my_point.getLatitude());
+            values.put(KEY_LONGITUDE, my_point.getLongitude());
+            values.put(KEY_CASES, my_point.getCases());
+            values.put(KEY_LAST_MODIFIED, my_point.getLastModified());
+            values.put(KEY_DESCRIPTION, my_point.getDescription());
+            values.put(KEY_COUNTRY, my_point.getCountry());
+
+            // Inserting Row
+            db.insert(TABLE_BLACKSPOTS, null, values);
+            db.close(); // Closing database connection
+        }
     }
 
     // Getting single point
@@ -130,7 +135,7 @@ public class blackspot_handler extends SQLiteOpenHelper {
                 my_point.setLatitude(cursor.getString(cursor.getColumnIndex(KEY_LATITUDE)));
                 my_point.setLongitude(cursor.getString(cursor.getColumnIndex(KEY_LONGITUDE)));
                 my_point.setCases(Integer.parseInt(cursor.getString(cursor.getColumnIndex(KEY_CASES))));
-                my_point.setLastModified(Long.parseLong(cursor.getString(cursor.getColumnIndex(KEY_LAST_MODIFIED))));
+                my_point.setLastModified(cursor.getString(cursor.getColumnIndex(KEY_LAST_MODIFIED)));
                 my_point.setDescription(cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION)));
                 my_point.setCountry(cursor.getString(cursor.getColumnIndex(KEY_COUNTRY)));
 
