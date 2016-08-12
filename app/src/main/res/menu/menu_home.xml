@@ -7,4 +7,10 @@
         android:menuCategory="system"
         android:title="Settings"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/cmd_directions"
+        android:icon="@android:drawable/ic_menu_directions"
+        android:menuCategory="system"
+        android:title="Directions"
+        app:showAsAction="always" />
 </menu>

@@ -73,10 +73,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
     }
 
     public void insert_into_table(MyPointOnMap my_point) {
-        // save if not exists
-        if (!my_db.getPoint(my_point.getLatitude())) {
-            // new insert
-            my_db.addMyPoinOnMap(my_point);
-        }
+        // new insert
+        my_db.addMyPoinOnMap(my_point);
     }
 }

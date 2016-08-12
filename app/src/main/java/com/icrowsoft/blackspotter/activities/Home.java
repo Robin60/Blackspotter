@@ -6,6 +6,8 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -37,6 +39,7 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdate;
@@ -55,6 +58,7 @@ import com.google.maps.android.PolyUtil;
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.SyncDB.sync_DB_offline;
 import com.icrowsoft.blackspotter.SyncDB.sync_DB_online;
+import com.icrowsoft.blackspotter.general.AddMarkersToMap;
 import com.icrowsoft.blackspotter.general.AddPointToDB;
 import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
@@ -88,7 +92,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private TextView lbl_accuracy;
     private View warning_dot;
     private Polyline current_polyline;
-    private Home my_context;
+    private Home my_activity;
     private List<MyPointOnMap> all_points;
     private TextView lbl_accidents;
     private TextView lbl_blackspots;
@@ -96,6 +100,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private Location my_current_location;
     private TextDrawable BS_fab_icon, AS_fab_icon, DZ_fab_icon;
     private FloatingActionButton fab_add_new, fab_black_spot, fab_danger_zone, fab_accident_scene;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
+    private Marker my_location_marker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +119,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         toolbar.setNavigationIcon(getResources().getDrawable(R.mipmap.ic_launcher));
 
         // get my context
-        my_context = this;
+        my_activity = this;
 
         // get view to use on the toolbar
         warning_dot = getLayoutInflater().inflate(R.layout.toolbar_home, null);
@@ -136,14 +146,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             }
         });
 
-
-        // TODO: 7/26/16 enable the ansyc tasks below
-//         syc database offline
-        new sync_DB_offline(getBaseContext()).execute();
-
-//         syc database online
-        new sync_DB_online(getBaseContext()).execute();
-
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -161,6 +163,11 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 return false;
             }
         });
+
+        BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
+
+            // fetch all points from DB
+            all_points = my_db.getAllPoints();
 
 
         // force actionbar overflow
@@ -223,7 +230,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             }
         });
 
-        // start locator service
+        // start notifier service
         startService(new Intent(getBaseContext(), Notifier.class));
     }
 
@@ -241,15 +248,28 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // get map reference
         mMap = googleMap;
 
+        // syc database offline
+        new sync_DB_offline(getBaseContext()).execute();
+
+        // syc database online
+        new sync_DB_online(getApplicationContext(), my_activity, mMap, fab_add_new).execute();
+
+        // set dummy location
+        my_current_location = new Location("dummyprovider");
+        my_current_location.setLatitude(-1.29207);
+        my_current_location.setLongitude(36.82195);
+
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast my_toast = Toast.makeText(getBaseContext(), "Location Access denied", Toast.LENGTH_SHORT);
             my_toast.setGravity(Gravity.CENTER, 0, 0);
             my_toast.show();
 
-            // set dummy location
-            my_current_location = new Location("dummyprovider");
-            my_current_location.setLatitude(-1.29207);
-            my_current_location.setLongitude(36.82195);
+            // request permission
+            ActivityCompat.requestPermissions(
+                    my_activity,
+                    new String[]{
+                            Manifest.permission.ACCESS_COARSE_LOCATION,
+                            Manifest.permission.ACCESS_FINE_LOCATION}, 111);
         } else {
             // enable my location
             mMap.setMyLocationEnabled(true);
@@ -266,13 +286,19 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // set clicks on info windows
         mMap.setOnInfoWindowClickListener(this);
 
-        // trigger my location request
-        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-            public Marker my_location_marker;
+        // track my location changes
+        track_me();
 
+        // add markers
+        new AddMarkersToMap(getBaseContext(), this, mMap).execute();
+    }
+
+    @SuppressWarnings("MissingPermission")
+    private void track_me() {
+        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
-
+                // remove my location marker
                 if (my_location_marker != null) {
                     my_location_marker.remove();
                 }
@@ -291,100 +317,142 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 // adding marker
                 my_location_marker = mMap.addMarker(marker);
 
-                // unhide lbl_accuracy
-                lbl_accuracy.setVisibility(View.VISIBLE);
-
                 // display lbl_accuracy
                 lbl_accuracy.setText("Acc: " + accuracy);
             }
         });
+        
+        LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
 
-        // add markers
-        new addMarkersToMap().execute();
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 600000,
+                500, new LocationListener() {// TODO: 8/6/16 change values here to match settings
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        Log.i("Kibet", "My location updated by GPS");
 
-        // set on click listener
-        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
-            @Override
-            public void onMapClick(LatLng latLng) {
+                        // remove my location marker
+                        if (my_location_marker != null) {
+                            my_location_marker.remove();
+                        }
 
-                try {
-                    int PLACE_PICKER_REQUEST = 888;
-                    PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+                        float accuracy = location.getAccuracy();
 
-                    // start place picker
-                    startActivityForResult(builder.build(my_context), PLACE_PICKER_REQUEST);
-                } catch (GooglePlayServicesRepairableException e) {
-                    Toast.makeText(my_context, "Repair your GooglePlayServices", Toast.LENGTH_SHORT).show();
-                } catch (GooglePlayServicesNotAvailableException e) {
-                    Toast.makeText(my_context, "GooglePlayServices not found", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
+                        // update my location
+                        my_current_location = location;
+
+                        // create marker
+                        MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+
+                        // Changing marker icon
+                        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                        // adding marker
+                        my_location_marker = mMap.addMarker(marker);
+
+                        // display lbl_accuracy
+                        lbl_accuracy.setText("Acc: " + accuracy);
+                    }
+
+                    @Override
+                    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String s) {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String s) {
+
+                    }
+                });
+        mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500000,
+                1000, new LocationListener() {// TODO: 8/6/16 change values here to match settings
+                    @Override
+                    public void onLocationChanged(Location location) {
+                        Log.i("Kibet", "My location updated by Cell tower");
+
+                        // remove my location marker
+                        if (my_location_marker != null) {
+                            my_location_marker.remove();
+                        }
+
+                        float accuracy = location.getAccuracy();
+
+                        // update my location
+                        my_current_location = location;
+
+                        // create marker
+                        MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+
+                        // Changing marker icon
+                        marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                        // adding marker
+                        my_location_marker = mMap.addMarker(marker);
+
+                        // display lbl_accuracy
+                        lbl_accuracy.setText("Acc: " + accuracy);
+                    }
+
+                    @Override
+                    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                    }
+
+                    @Override
+                    public void onProviderEnabled(String s) {
+
+                    }
+
+                    @Override
+                    public void onProviderDisabled(String s) {
+
+                    }
+                });
     }
 
-    private String getDirectionsUrl(LatLng origin, LatLng dest) {
+//    @Override
+//    public void onStart() {
+//        super.onStart();
+//
+//        // ATTENTION: This was auto-generated to implement the App Indexing API.
+//        // See https://g.co/AppIndexing/AndroidStudio for more information.
+//        client.connect();
+//        Action viewAction = Action.newAction(
+//                Action.TYPE_VIEW, // TODO: choose an action type.
+//                "Home Page", // TODO: Define a title for the content shown.
+//                // TODO: If you have web page content that matches this app activity's content,
+//                // make sure this auto-generated web page URL is correct.
+//                // Otherwise, set the URL to null.
+//                Uri.parse("http://host/path"),
+//                // TODO: Make sure this auto-generated app URL is correct.
+//                Uri.parse("android-app://com.icrowsoft.blackspotter.activities/http/host/path")
+//        );
+//        AppIndex.AppIndexApi.start(client, viewAction);
+//    }
 
-        // Origin of route
-        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
-
-        // Destination of route
-        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
-
-        // Sensor enabled
-        String sensor = "sensor=false";
-
-        // Building the parameters to the web service
-        String parameters = str_origin + "&" + str_dest + "&" + sensor;
-
-        // Output format
-        String output = "json";
-
-        // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
-
-        return url;
-    }
-
-    /**
-     * A method to download json data from url
-     */
-    private String downloadUrl(String strUrl) throws IOException {
-        String data = "";
-        InputStream iStream = null;
-        HttpURLConnection urlConnection = null;
-        try {
-            URL url = new URL(strUrl);
-
-            // Creating an http connection to communicate with url
-            urlConnection = (HttpURLConnection) url.openConnection();
-
-            // Connecting to url
-            urlConnection.connect();
-
-            // Reading data from url
-            iStream = urlConnection.getInputStream();
-
-            BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-            StringBuffer sb = new StringBuffer();
-
-            String line = "";
-            while ((line = br.readLine()) != null) {
-                sb.append(line);
-            }
-
-            data = sb.toString();
-
-            br.close();
-
-        } catch (Exception e) {
-            Log.d("Exception", e.toString());
-        } finally {
-            iStream.close();
-            urlConnection.disconnect();
-        }
-        return data;
-    }
+//    @Override
+//    public void onStop() {
+//        super.onStop();
+//
+//        // ATTENTION: This was auto-generated to implement the App Indexing API.
+//        // See https://g.co/AppIndexing/AndroidStudio for more information.
+//        Action viewAction = Action.newAction(
+//                Action.TYPE_VIEW, // TODO: choose an action type.
+//                "Home Page", // TODO: Define a title for the content shown.
+//                // TODO: If you have web page content that matches this app activity's content,
+//                // make sure this auto-generated web page URL is correct.
+//                // Otherwise, set the URL to null.
+//                Uri.parse("http://host/path"),
+//                // TODO: Make sure this auto-generated app URL is correct.
+//                Uri.parse("android-app://com.icrowsoft.blackspotter.activities/http/host/path")
+//        );
+//        AppIndex.AppIndexApi.end(client, viewAction);
+//        client.disconnect();
+//    }
 
     // Fetches data from url passed
     private class DownloadTask extends AsyncTask<String, Void, String> {
@@ -402,6 +470,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             } catch (Exception e) {
                 Log.d("Background Task", e.toString());
             }
+
+            Log.i("Kibet", "Direct JSON >> " + data);// TODO: 8/8/16  delete
+
             return data;
         }
 
@@ -415,6 +486,47 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
             // Invokes the thread for parsing the JSON data
             parserTask.execute(result);
+        }
+
+        /**
+         * A method to download json data from url
+         */
+        private String downloadUrl(String strUrl) throws IOException {
+            String data = "";
+            InputStream iStream = null;
+            HttpURLConnection urlConnection = null;
+            try {
+                URL url = new URL(strUrl);
+
+                // Creating an http connection to communicate with url
+                urlConnection = (HttpURLConnection) url.openConnection();
+
+                // Connecting to url
+                urlConnection.connect();
+
+                // Reading data from url
+                iStream = urlConnection.getInputStream();
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+                StringBuffer sb = new StringBuffer();
+
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                data = sb.toString();
+
+                br.close();
+
+            } catch (Exception e) {
+                Log.d("Exception", e.toString());
+            } finally {
+                iStream.close();
+                urlConnection.disconnect();
+            }
+            return data;
         }
     }
 
@@ -445,53 +557,58 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            ArrayList<LatLng> points = null;
-            PolylineOptions lineOptions = null;
-            MarkerOptions markerOptions = new MarkerOptions();
+            if (!(result.size() > 0)) {
+                Snackbar.make(fab_add_new, "Seems API Quota Limit Reached", Snackbar.LENGTH_SHORT).show();
+            } else {
 
-            // Traversing through all the routes
-            for (int i = 0; i < result.size(); i++) {
-                points = new ArrayList<>();
-                lineOptions = new PolylineOptions();
+                ArrayList<LatLng> points = null;
+                PolylineOptions lineOptions = null;
+                MarkerOptions markerOptions = new MarkerOptions();
 
-                // Fetching i-th route
-                List<HashMap<String, String>> path = result.get(i);
+                // Traversing through all the routes
+                for (int i = 0; i < result.size(); i++) {
+                    points = new ArrayList<>();
+                    lineOptions = new PolylineOptions();
 
-                // Fetching all the points in i-th route
-                for (int j = 0; j < path.size(); j++) {
-                    HashMap<String, String> point = path.get(j);
+                    // Fetching i-th route
+                    List<HashMap<String, String>> path = result.get(i);
 
-                    double lat = Double.parseDouble(point.get("lat"));
-                    double lng = Double.parseDouble(point.get("lng"));
-                    LatLng position = new LatLng(lat, lng);
+                    // Fetching all the points in i-th route
+                    for (int j = 0; j < path.size(); j++) {
+                        HashMap<String, String> point = path.get(j);
 
-                    points.add(position);
+                        double lat = Double.parseDouble(point.get("lat"));
+                        double lng = Double.parseDouble(point.get("lng"));
+                        LatLng position = new LatLng(lat, lng);
+
+                        points.add(position);
+                    }
+
+                    // Adding all the points in the route to LineOptions
+                    lineOptions.addAll(points);
+                    lineOptions.width(10);
+                    lineOptions.color(Color.BLUE);
                 }
 
-                // Adding all the points in the route to LineOptions
-                lineOptions.addAll(points);
-                lineOptions.width(10);
-                lineOptions.color(Color.BLUE);
+                // remove any polyline on the map
+                if (current_polyline != null) {
+                    current_polyline.remove();
+                }
+
+                // Drawing polyline in the Google Map for the i-th route
+                current_polyline = mMap.addPolyline(lineOptions);
+                //// TODO: 7/29/16 add a marker to the destination
+
+                // check if any point lies on the path
+                getBlackspotsOnPath(points);
+
+                // zoom map to show path
+                auto_zoom_map_to_show_path(points);
             }
-
-            // remove any polyline on the map
-            if (current_polyline != null) {
-                current_polyline.remove();
-            }
-
-            // Drawing polyline in the Google Map for the i-th route
-            current_polyline = mMap.addPolyline(lineOptions);
-            //// TODO: 7/29/16 add a marker to the destination
-
-            // check if any point lies on the path
-            getBlackspotsOnPath(points);
-
-            // zoom map to show path
-            auto_zoom_map_to_show_path(points);
         }
 
         private void auto_zoom_map_to_show_path(final ArrayList<LatLng> points) {
-            my_context.runOnUiThread(new Runnable() {
+            my_activity.runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     LatLngBounds.Builder builder = new LatLngBounds.Builder();
@@ -714,14 +831,14 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         // set fields
                         new_point.setCases(0);
                         new_point.setCountry("");
-                        new_point.setName("");
+                        new_point.setName(description);// use description as name before resolve
                         new_point.setLastModified("" + System.currentTimeMillis());
                         new_point.setLatitude(String.valueOf(point.getLatitude()));
                         new_point.setLongitude(String.valueOf(point.getLongitude()));
                         new_point.setDescription(description);
 
                         // add point to DB
-                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
+                        new AddPointToDB(getApplicationContext(), my_activity, mMap, fab_add_new).add_this_point(new_point);
                     }
                 }).onNegative(new MaterialDialog.SingleButtonCallback() {
             @Override
@@ -750,8 +867,59 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             case R.id.cmd_settings:
                 startActivity(new Intent(getBaseContext(), Home_Prefence.class));
                 break;
+            case R.id.cmd_directions:
+
+                if (my_current_location == null) {
+                    Snackbar.make(fab_add_new, "Cannot find myLocation!!", Snackbar.LENGTH_LONG).show();
+                } else {
+                    if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                        // request permission
+                        ActivityCompat.requestPermissions(
+                                my_activity,
+                                new String[]{
+                                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                                        Manifest.permission.ACCESS_FINE_LOCATION}, 111);
+                    } else {
+                        // request for location picker
+                        try {
+                            int PLACE_PICKER_REQUEST = 888;
+                            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+
+                            // start place picker
+                            startActivityForResult(builder.build(my_activity), PLACE_PICKER_REQUEST);
+                        } catch (GooglePlayServicesRepairableException e) {
+                            Toast.makeText(my_activity, "Repair your GooglePlayServices", Toast.LENGTH_SHORT).show();
+                        } catch (GooglePlayServicesNotAvailableException e) {
+                            Toast.makeText(my_activity, "GooglePlayServices not found", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+
+                break;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("MissingPermission")
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        switch (requestCode) {
+            case 111:
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // permission granted... user can retry operation
+                    Snackbar.make(fab_add_new, "Re-try Request", Snackbar.LENGTH_LONG).show();
+
+                    // enable my location
+                    mMap.setMyLocationEnabled(true);
+                } else {
+                    // toast
+                    Snackbar.make(fab_add_new, "User Denied Request", Snackbar.LENGTH_LONG).show();
+                }
+                break;
+        }
     }
 
     /**
@@ -762,20 +930,44 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case 777:
-                    // get String values the recognition engine thought it heard
-                    ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+//                    // get String values the recognition engine thought it heard
+//                    ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+//
+//                    // TODO: 7/29/16 handle voice commands
+//                    // get first match
+//                    String first_match = matches.get(0);
+//
+//                    // create a point from current location
+//                    MyPointOnMap new_point = new MyPointOnMap();
+//
+//                    // set fields
+//                    new_point.setCases(0);
+//                    new_point.setCountry("");
+//                    new_point.setName("");
+//                    new_point.setLastModified("" + System.currentTimeMillis());
+//                    new_point.setLatitude(String.valueOf(point.getLatitude()));
+//                    new_point.setLongitude(String.valueOf(point.getLongitude()));
+//                    new_point.setDescription(description);
+//
+//                    // check for matches
+//                    if (first_match.equals("Please add spot")) {
+//
+//                        // add point to DB
+//                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
+//                    } else if (first_match.equals("Please add zone")) {
+//
+//                        // add point to DB
+//                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
+//                    } else if (first_match.equals("Please add scene")) {
+//
+//                        // add point to DB
+//                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
+//                    }
 
-                    // TODO: 7/29/16 handle voice commands
-                    Toast.makeText(getBaseContext(), "Received: " + matches.get(0), Toast.LENGTH_SHORT).show();
                     break;
                 case 888:
-                    Place place = PlacePicker.getPlace(data, this);
+                    final Place place = PlacePicker.getPlace(data, this);
 
-                    try {
-                        my_current_location = mMap.getMyLocation();
-                    } catch (Exception e) {
-                        Log.e("Kibet", "My location layer not enabled! " + e.getMessage());
-                    }
                     LatLng origin = new LatLng(my_current_location.getLatitude(), my_current_location.getLongitude());
                     LatLng dest = place.getLatLng();
 
@@ -786,6 +978,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                     // Start downloading json data from Google Directions API
                     downloadTask.execute(url);
+
                     break;
             }
         }
@@ -793,52 +986,75 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private class addMarkersToMap extends AsyncTask<String, String, String> {
-        @Override
-        protected String doInBackground(String... strings) {
-            // get database reference
-            BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
+    private String getDirectionsUrl(LatLng origin, LatLng dest) {
 
-            // fetch all points from DB
-            all_points = my_db.getAllPoints();
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
 
-            // loop to create markers
-            for (int i = 0; i < all_points.size(); i++) {
-                // get point reference
-                MyPointOnMap my_point = all_points.get(i);
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
 
-                // get description
-                String description = my_point.getDescription();
+        // Sensor enabled
+        String sensor = "sensor=false";
 
-                // Add a marker
-                LatLng new_point = new LatLng(Double.parseDouble(my_point.getLatitude()), Double.parseDouble(my_point.getLongitude()));
-                final MarkerOptions point_on_map = new MarkerOptions();
-                point_on_map.title(my_point.getName());
-                point_on_map.draggable(false);
-                point_on_map.alpha(0.9f);
-                point_on_map.position(new_point);
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + sensor;
 
-                // know the type of point we are dealing with
-                if (description.equals("Black spot")) {
-                    point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
-                } else if (description.equals("Danger zone")) {
-                    point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
-                } else if (description.equals("Accident scene")) {
-                    point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
-                }
+        // Output format
+        String output = "json";
 
-                // add markers on main thread
-                my_context.runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        //add marker
-                        mMap.addMarker(point_on_map);
-                    }
-                });
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters;
 
-
-            }
-            return null;
-        }
+        return url;
     }
+
+//    private class addMarkersToMap extends AsyncTask<String, String, String> {
+//        @Override
+//        protected String doInBackground(String... strings) {
+//            // get database reference
+//            BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
+//
+//            // fetch all points from DB
+//            all_points = my_db.getAllPoints();
+//
+//            // loop to create markers
+//            for (int i = 0; i < all_points.size(); i++) {
+//                // get point reference
+//                MyPointOnMap my_point = all_points.get(i);
+//
+//                // get description
+//                String description = my_point.getDescription();
+//
+//                // Add a marker
+//                LatLng new_point = new LatLng(Double.parseDouble(my_point.getLatitude()), Double.parseDouble(my_point.getLongitude()));
+//                final MarkerOptions point_on_map = new MarkerOptions();
+//                point_on_map.title(my_point.getName());
+//                point_on_map.draggable(false);
+//                point_on_map.alpha(0.9f);
+//                point_on_map.position(new_point);
+//
+//                // know the type of point we are dealing with
+//                if (description.equals("Black spot")) {
+//                    point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_RED));
+//                } else if (description.equals("Danger zone")) {
+//                    point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_YELLOW));
+//                } else if (description.equals("Accident scene")) {
+//                    point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
+//                }
+//
+//                // add markers on main thread
+//                my_activity.runOnUiThread(new Runnable() {
+//                    @Override
+//                    public void run() {
+//                        //add marker
+//                        mMap.addMarker(point_on_map);
+//                    }
+//                });
+//
+//
+//            }
+//            return null;
+//        }
+//    }
 }

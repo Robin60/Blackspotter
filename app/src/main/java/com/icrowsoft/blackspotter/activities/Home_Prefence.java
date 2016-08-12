@@ -1,8 +1,8 @@
 package com.icrowsoft.blackspotter.activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.preference.CheckBoxPreference;
 import android.preference.EditTextPreference;
 import android.preference.Preference;
@@ -15,19 +15,26 @@ import com.icrowsoft.blackspotter.R;
 /**
  * Created by teardrops on 7/27/16.
  */
-public class Home_Prefence extends PreferenceActivity {
+public class Home_Prefence extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
     private SharedPreferences settings;
     private boolean allowed_notifications_value;
     private EditTextPreference distance_to_notify_view;
     private CheckBoxPreference allowed_notifications_view;
     private CheckBoxPreference chk_metres;
     private CheckBoxPreference chk_yards;
+    private RingtonePreference ringtone_view;
+    private boolean was_change_made;
+    private CheckBoxPreference reminders_view;
+    private boolean allowed_reminders_value;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // add layout file
         addPreferencesFromResource(R.xml.home_settings);
+
+        // initialize change listener
+        was_change_made = false;
 
         // preference manager
         settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -37,10 +44,18 @@ public class Home_Prefence extends PreferenceActivity {
 
         // get allowed notifications view
         allowed_notifications_view = (CheckBoxPreference) findPreference("allow_notifications");
-        // get distance to notify view
-        distance_to_notify_view = (EditTextPreference) findPreference("distance_to_notify");
         // add on change listener
         allowed_notifications_view.setOnPreferenceChangeListener(on_toggle_notifications());
+
+        // get distance to notify view
+        distance_to_notify_view = (EditTextPreference) findPreference("distance_to_notify");
+        // add to change listener
+        distance_to_notify_view.setOnPreferenceChangeListener(this);
+
+        // get ringtone
+        ringtone_view = (RingtonePreference) findPreference("notif_sound");
+        // add to change listener
+        ringtone_view.setOnPreferenceChangeListener(this);
 
         // get metres view
         chk_metres = (CheckBoxPreference) findPreference("chk_metres");
@@ -52,16 +67,22 @@ public class Home_Prefence extends PreferenceActivity {
         // add on change listener
         chk_yards.setOnPreferenceChangeListener(on_toggle_yards());
 
+        // get reminders
+        reminders_view = (CheckBoxPreference) findPreference("allow_reminders");
+        // add on change listener
+        reminders_view.setOnPreferenceChangeListener(this);
+
         // check notification status and change affected views
         check_notification_status();
-
-
     }
 
     private Preference.OnPreferenceChangeListener on_toggle_notifications() {
         return new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
+                // register a change
+                was_change_made = true;
+
                 // change allowed notifications value
                 if (allowed_notifications_value) {
                     // get notification preference value
@@ -88,6 +109,9 @@ public class Home_Prefence extends PreferenceActivity {
         return new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
+                // register a change
+                was_change_made = true;
+
                 // change allowed notifications value
                 if (!chk_yards.isChecked()) {
                     // change views
@@ -103,6 +127,9 @@ public class Home_Prefence extends PreferenceActivity {
         return new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
+                // register a change
+                was_change_made = true;
+
                 // change allowed notifications value
                 if (!chk_metres.isChecked()) {
                     // change views
@@ -124,6 +151,36 @@ public class Home_Prefence extends PreferenceActivity {
             distance_to_notify_view.setEnabled(false);
             chk_metres.setEnabled(false);
             chk_yards.setEnabled(false);
+        }
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object o) {
+        // register a change
+        was_change_made = true;
+
+        if (preference.getKey().equals("allow_reminders")) {
+            // get value
+            allowed_reminders_value = settings.getBoolean("allow_reminders", true);
+
+            if (allowed_reminders_value) {
+                reminders_view.setChecked(false);
+            } else {
+                reminders_view.setChecked(true);
+            }
+        }
+
+        return false;
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
+        // check if there was a change
+        if (was_change_made) {
+            // send broadcast
+            sendBroadcast(new Intent("REQUEST_TO_SERVICE"));
         }
     }
 }

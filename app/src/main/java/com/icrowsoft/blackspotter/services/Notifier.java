@@ -1,13 +1,17 @@
 package com.icrowsoft.blackspotter.services;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.icrowsoft.blackspotter.my_notifier.MyNotifier;
@@ -35,15 +39,17 @@ public class Notifier extends Service {
     private boolean user_already_notified;
     private LatLng my_location;
     private MyNotifier my_notifier_instance;
+    private boolean use_metres;
+    private String distance_to_notify;
+    private String reminder_interval;
+    private boolean allowed_notifications;
+    private boolean allowed_reminders;
+    private float global_distance_in_metres;
 
-    @Nullable
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
-    }
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.i("Kibet", "Service started");// TODO: 8/8/16 delete
 
-    @Override
-    public void onStart(Intent intent, int startId) {
         // get handler instance
         my_handler = new Handler();
 
@@ -59,7 +65,32 @@ public class Notifier extends Service {
         // check proximity to any danger zone
         check_proximity();
 
-        super.onStart(intent, startId);
+        // Create Broadcast
+        BroadcastReceiver changes_update_receiver = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                Log.i("Kibet", "Broadcast received");// TODO: 8/8/16 delete
+
+                // cancel any call backs
+                my_handler.removeCallbacks(notifier_resetter);
+
+                // re-check proximity
+                check_proximity();
+            }
+        };
+
+        // register the broadcast receiver
+        IntentFilter intent_filter = new IntentFilter();
+        intent_filter.addAction("REQUEST_TO_SERVICE");
+        registerReceiver(changes_update_receiver, intent_filter);
+
+        return super.onStartCommand(intent, flags, startId);
+    }
+
+    @Nullable
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
     }
 
     private void check_proximity() {
@@ -81,9 +112,11 @@ public class Notifier extends Service {
                 float distance_in_metres = calculate_distance(my_point);
 
                 //capture units to use
-                boolean use_metres = settings.getBoolean("chk_metres", true);
-                String distance_to_notify = settings.getString("distance_to_notify", "500");
-                String reminder_interval = settings.getString("reminder_interval", "15");
+                use_metres = settings.getBoolean("chk_metres", true);
+                distance_to_notify = settings.getString("distance_to_notify", "500");
+                reminder_interval = settings.getString("reminder_interval", "15");
+                allowed_notifications = settings.getBoolean("allow_notifications", true);
+                allowed_reminders = settings.getBoolean("allow_reminders", true);
 
                 // check units
                 if (!use_metres) {
@@ -95,14 +128,28 @@ public class Notifier extends Service {
 
                 // check if within proximity
                 if (distance_in_metres < Integer.parseInt(distance_to_notify)) {
-                    //spawn notification
-                    my_notifier_instance.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + my_point.getName());
-
+                    Log.i("Kibet", "Close to >>> " + my_point.getName());
                     // reset
                     user_already_notified = true;
 
+                    if (allowed_notifications) {
+                        // check if is a reminder
+                        if (global_distance_in_metres == distance_in_metres) {
+                            if (allowed_reminders) {
+                                //spawn notification
+                                my_notifier_instance.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + my_point.getName());
+                            }
+                        } else {
+                            //spawn notification
+                            my_notifier_instance.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + my_point.getName());
+                        }
+                    }
+
                     // start timer to reset has notified
                     my_handler.postDelayed(notifier_resetter, (Integer.parseInt(reminder_interval) * 60000));
+
+                    // set global reminder distance in metres
+                    global_distance_in_metres = distance_in_metres;
 
                     // stop loop
                     break;
@@ -114,7 +161,7 @@ public class Notifier extends Service {
     }
 
     private float calculate_distance(MyPointOnMap black_spot) {
-        // prepare array fro results
+        // prepare array from results
         float[] distance_results = new float[4];
 
         // calculate distance

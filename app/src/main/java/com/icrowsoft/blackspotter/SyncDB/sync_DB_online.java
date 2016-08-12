@@ -1,12 +1,15 @@
 package com.icrowsoft.blackspotter.SyncDB;
 
 
+import android.app.Activity;
 import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.util.Log;
+import android.view.View;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -25,15 +28,20 @@ import java.util.Locale;
  */
 public class sync_DB_online extends AsyncTask<String, String, String> {
     private final Context _context;
+    private final Activity _activity;
+    private final GoogleMap _map;
+    private final View _fab;
     private DatabaseReference my_db_ref;
 
-    public sync_DB_online(Context context) {
-        this._context = context;
+    public sync_DB_online(Context context, Activity activity, GoogleMap map, View view) {
+        _context = context;
+        _activity = activity;
+        _map = map;
+        _fab = view;
     }
 
     @Override
     protected String doInBackground(String... strings) {
-        Log.i("Kibet", "Online SYNC started");
 
         final DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
 
@@ -52,11 +60,7 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
 
                     for (final MyPointOnMap my_point : all_map_points) {
                         // fetch country and save online
-                        new AddPointToDB(_context).add_this_point(my_point);
-
-//                        // save online
-//                        DatabaseReference my_data_save_ref = my_db_ref.push();
-//                        my_data_save_ref.setValue(my_point);
+                        new AddPointToDB(_context, _activity, _map, _fab).add_this_point(my_point);
                     }
                 } else {
                     Log.i("Kibet", "-- Data already in DB");// TODO: 7/29/16 delete
