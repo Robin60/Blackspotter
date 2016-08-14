@@ -115,7 +115,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     }
 
     // Getting All Contacts
-    public List<MyPointOnMap> getAllPoints() {
+    public List<MyPointOnMap> getAllPoints(String caller) {
 
         List<MyPointOnMap> myPointsList = new ArrayList<>();
 
@@ -125,7 +125,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        Log.i("Kibet", "COUNT >> " + cursor.getCount());// TODO: 7/29/16 remove this
+        Log.i("Kibet", caller+": COUNT >> " + cursor.getCount());// TODO: 7/29/16 remove this
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {
@@ -148,7 +148,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         return myPointsList;
     }
 
-    // Updating single contact
+    // Updating single point
     public int updateMyPoint(MyPointOnMap my_point) {
         SQLiteDatabase db = this.getWritableDatabase();
 
@@ -167,7 +167,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     }
 
     // Deleting single contact
-    public void deleteContact(MyPointOnMap my_point) {
+    public void deletePoint(MyPointOnMap my_point) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_BLACKSPOTS, KEY_LATITUDE + " = ?",
                 new String[]{String.valueOf(my_point.getLatitude())});

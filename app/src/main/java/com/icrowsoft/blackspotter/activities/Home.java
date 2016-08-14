@@ -2,6 +2,7 @@ package com.icrowsoft.blackspotter.activities;
 
 import android.Manifest;
 import android.app.ActivityManager;
+import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +16,9 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -45,6 +48,7 @@ import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -65,6 +69,7 @@ import com.icrowsoft.blackspotter.SyncDB.sync_DB_online;
 import com.icrowsoft.blackspotter.general.AddMarkersToMap;
 import com.icrowsoft.blackspotter.general.AddPointToDB;
 import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
+import com.icrowsoft.blackspotter.my_notifier.MyNotifier;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.roundImage.CreateMyRoundedDrawable;
 import com.icrowsoft.blackspotter.roundImage.TextDrawable;
@@ -85,6 +90,7 @@ import java.security.ProviderException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
 
@@ -112,11 +118,22 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      */
     private GoogleApiClient client;
     private Marker my_location_marker;
+    private TextToSpeech textToSpeech;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        textToSpeech = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status != TextToSpeech.ERROR) {
+                    textToSpeech.setLanguage(Locale.UK);
+                }
+            }
+        });
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -126,6 +143,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
         // get my context
         my_activity = this;
+
+        // create handler
+        handler = new Handler();
 
         // get view to use on the toolbar
         warning_dot = getLayoutInflater().inflate(R.layout.toolbar_home, null);
@@ -149,6 +169,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                 // hide the view
                 view.setVisibility(View.GONE);
+
+                // get notification manager
+                final NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+                // clear any notifications
+                mNotificationManager.cancel(0);
             }
         });
 
@@ -173,7 +199,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
 
         // fetch all points from DB
-        all_points = my_db.getAllPoints();
+        all_points = my_db.getAllPoints("Home");
 
 
         // force actionbar overflow
@@ -290,7 +316,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         new sync_DB_offline(getBaseContext()).execute();
 
         // syc database online
-        new sync_DB_online(getApplicationContext(), my_activity, mMap, fab_add_new).execute();
+        new sync_DB_online(getApplicationContext(),handler, my_activity, mMap, fab_add_new).execute();
 
         // set dummy location
         my_current_location = new Location("dummy_provider");
@@ -779,10 +805,14 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      */
     private void startVoiceRecognitionActivity() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
+//        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
 //        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-//        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Voice recognition Demo...");
+//        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Add point on map...");
         startActivityForResult(intent, REQUEST_CODE);
+
+        // Toast
+        Toast.makeText(getBaseContext(), "Speak", Toast.LENGTH_SHORT).show();
     }
 
     private void toggleFullscreen() {
@@ -820,21 +850,21 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         switch (view.getId()) {
             case R.id.fab_black_spot:
                 // handle add this location to map
-                add_location_to_DB("Add Black Spot", "Add this location as an accident black spot?", "Black spot", my_current_location);
+                add_location_to_DB_via_click("Add Black Spot", "Add this location as an accident black spot?", "Black spot", my_current_location);
 
                 // hide fabs
                 animateFAB();
                 break;
             case R.id.fab_accident_scene:
                 // handle add this location to map
-                add_location_to_DB("Add Accident Scene", "Add this location as an accident scene?", "Accident scene", my_current_location);
+                add_location_to_DB_via_click("Add Accident Scene", "Add this location as an accident scene?", "Accident scene", my_current_location);
 
                 // hide fabs
                 animateFAB();
                 break;
             case R.id.fab_danger_zone:
                 // handle add this location to map
-                add_location_to_DB("Add A Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
+                add_location_to_DB_via_click("Add A Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
 
                 // hide fabs
                 animateFAB();
@@ -844,21 +874,28 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 toggleFullscreen();
                 break;
             case R.id.fab_speak:
-                // Check if speech recognition is supported
-                PackageManager pm = getPackageManager();
-                List<ResolveInfo> activities = pm.queryIntentActivities(
-                        new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
-                if (activities.size() == 0) {
-                    Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
-                } else {
-                    // start voice recognition activity
-                    startVoiceRecognitionActivity();
-                }
+//                // Check if speech recognition is supported
+//                PackageManager pm = getPackageManager();
+//                List<ResolveInfo> activities = pm.queryIntentActivities(
+//                        new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+//                if (activities.size() == 0) {
+//                    Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
+//                } else {
+//                    // start voice recognition activity
+//                    startVoiceRecognitionActivity();
+//                }
+
+                // todo delete
+                new MyNotifier().notify_user(getBaseContext(), "Test", "Warning");
+
                 break;
         }
     }
 
-    private void add_location_to_DB(String title, String body, final String description, final Location point) {
+    /*
+    * Add point to database via click
+    */
+    private void add_location_to_DB_via_click(String title, String body, final String description, final Location point) {
         new MaterialDialog.Builder(this)
                 .title(title)
                 .content(body)
@@ -886,15 +923,38 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         new_point.setDescription(description);
 
                         // add point to DB
-                        new AddPointToDB(getApplicationContext(), my_activity, mMap, fab_add_new).add_this_point(new_point);
+                        new AddPointToDB(getApplicationContext(),handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
                     }
                 }).onNegative(new MaterialDialog.SingleButtonCallback() {
-                    @Override
-                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                        // negative button
-                        dialog.dismiss();
-                    }
-                }).show();
+            @Override
+            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                // negative button
+                dialog.dismiss();
+            }
+        }).show();
+    }
+
+    /*
+    * Add point to database via Voice command
+    */
+    private void add_location_to_DB_via_voice(String description, final Location point) {
+        // create a point using current location
+        MyPointOnMap new_point = new MyPointOnMap();
+
+        // set fields
+        new_point.setCases(0);
+        new_point.setCountry("");
+        new_point.setName(description);// use description as name before resolve
+        new_point.setLastModified("" + System.currentTimeMillis());
+        new_point.setLatitude(String.valueOf(point.getLatitude()));
+        new_point.setLongitude(String.valueOf(point.getLongitude()));
+        new_point.setDescription(description);
+
+        // add point to DB
+        new AddPointToDB(getApplicationContext(), handler,my_activity, mMap, fab_add_new).add_this_point(new_point);
+
+        // play sound
+        textToSpeech.speak(description + " successfully added", TextToSpeech.QUEUE_FLUSH, null);
     }
 
     /**
@@ -928,18 +988,30 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                                         Manifest.permission.ACCESS_COARSE_LOCATION,
                                         Manifest.permission.ACCESS_FINE_LOCATION}, 111);
                     } else {
-                        // request for location picker
                         try {
                             int PLACE_PICKER_REQUEST = 888;
-                            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
-
-                            // start place picker
-                            startActivityForResult(builder.build(my_activity), PLACE_PICKER_REQUEST);
+                            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+//                                    .setFilter(typeFilter)
+                                    .build(this);
+                            startActivityForResult(intent, PLACE_PICKER_REQUEST);
                         } catch (GooglePlayServicesRepairableException e) {
-                            Toast.makeText(my_activity, "Repair your GooglePlayServices", Toast.LENGTH_SHORT).show();
+                            // TODO: Handle the error.
                         } catch (GooglePlayServicesNotAvailableException e) {
-                            Toast.makeText(my_activity, "GooglePlayServices not found", Toast.LENGTH_SHORT).show();
+                            // TODO: Handle the error.
                         }
+
+//                        // request for location picker
+//                        try {
+//                            int PLACE_PICKER_REQUEST = 888;
+//                            PlacePicker.IntentBuilder builder = new PlacePicker.IntentBuilder();
+//
+//                            // start place picker
+//                            startActivityForResult(builder.build(my_activity), PLACE_PICKER_REQUEST);
+//                        } catch (GooglePlayServicesRepairableException e) {
+//                            Toast.makeText(my_activity, "Repair your GooglePlayServices", Toast.LENGTH_SHORT).show();
+//                        } catch (GooglePlayServicesNotAvailableException e) {
+//                            Toast.makeText(my_activity, "GooglePlayServices not found", Toast.LENGTH_SHORT).show();
+//                        }
                     }
                 }
 
@@ -975,42 +1047,22 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.i("Kibet", "Data: " + data);
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case 777:
-//                    // get String values the recognition engine thought it heard
-//                    ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-//
-//                    // TODO: 7/29/16 handle voice commands
-//                    // get first match
-//                    String first_match = matches.get(0);
-//
-//                    // create a point from current location
-//                    MyPointOnMap new_point = new MyPointOnMap();
-//
-//                    // set fields
-//                    new_point.setCases(0);
-//                    new_point.setCountry("");
-//                    new_point.setName("");
-//                    new_point.setLastModified("" + System.currentTimeMillis());
-//                    new_point.setLatitude(String.valueOf(point.getLatitude()));
-//                    new_point.setLongitude(String.valueOf(point.getLongitude()));
-//                    new_point.setDescription(description);
-//
-//                    // check for matches
-//                    if (first_match.equals("Please add spot")) {
-//
-//                        // add point to DB
-//                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
-//                    } else if (first_match.equals("Please add zone")) {
-//
-//                        // add point to DB
-//                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
-//                    } else if (first_match.equals("Please add scene")) {
-//
-//                        // add point to DB
-//                        new AddPointToDB(getBaseContext()).add_this_point(new_point);
-//                    }
+                    // get String values the recognition engine thought it heard
+                    ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+
+                    Log.i("Kibet", "Matches: " + matches);
+
+                    // get first match
+                    String first_match = matches.get(0);
+
+                    Toast.makeText(getBaseContext(), ">>" + first_match + "<<", Toast.LENGTH_SHORT).show();
+
+                    // handle voice command
+                    handle_voice_command(first_match);
 
                     break;
                 case 888:
@@ -1032,6 +1084,38 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void handle_voice_command(String first_match) {
+
+        // check for matches
+        if (first_match.equals("Add a black spot")) {
+
+            // add point to DB
+            add_location_to_DB_via_voice("Black spot", my_current_location);
+        } else if (first_match.equals("Add a danger zone")) {
+
+            // add point to DB
+            add_location_to_DB_via_voice("Danger zone", my_current_location);
+        } else if (first_match.equals("Add accident scene")) {
+
+            // add point to DB
+            add_location_to_DB_via_voice("Accident scene", my_current_location);
+        } else {
+            // ask for retrial
+            textToSpeech.speak("Please try again", TextToSpeech.QUEUE_FLUSH, null);
+
+            // relaunch speech recognizer
+            PackageManager pm = getPackageManager();
+            List<ResolveInfo> activities = pm.queryIntentActivities(
+                    new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+            if (activities.size() == 0) {
+                Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
+            } else {
+                // start voice recognition activity
+                startVoiceRecognitionActivity();
+            }
+        }
     }
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {

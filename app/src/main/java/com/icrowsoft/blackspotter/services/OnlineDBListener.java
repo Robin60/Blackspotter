@@ -66,14 +66,15 @@ public class OnlineDBListener extends Service {
 
                     // insert new points to DB
                     insert_into_table(my_point);
-
-                    // send broadcast
-                    sendBroadcast(new Intent("REFRESH_MARKERS"));
                 }
+
+                // send broadcast
+                sendBroadcast(new Intent("REFRESH_MARKERS"));
             }
 
             @Override
             public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                Log.i("Kibet", "Changed: " + s + " --Snapshot: " + dataSnapshot);
                 // get country
                 String country = dataSnapshot.getKey();
 
@@ -101,6 +102,14 @@ public class OnlineDBListener extends Service {
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
                 Log.i("Kibet", "Removed: " + dataSnapshot);
+                // loop through json
+                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                    String latitude = postSnapshot.child("latitude").getValue().toString();
+                    String longitude = postSnapshot.child("longitude").getValue().toString();
+
+                    Log.i("Kibet", "Removed latitude: " + latitude);
+                    Log.i("Kibet", "Removed longitude: " + longitude);
+                }
             }
 
             @Override
@@ -110,7 +119,7 @@ public class OnlineDBListener extends Service {
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
-
+                Log.i("Kibet", "Cancelled: Request was cancelled");
             }
 
             public void insert_into_table(MyPointOnMap my_point) {

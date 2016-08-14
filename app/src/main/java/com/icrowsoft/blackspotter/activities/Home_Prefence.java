@@ -22,10 +22,10 @@ public class Home_Prefence extends PreferenceActivity implements Preference.OnPr
     private CheckBoxPreference allowed_notifications_view;
     private CheckBoxPreference chk_metres;
     private CheckBoxPreference chk_yards;
-    private RingtonePreference ringtone_view;
     private boolean was_change_made;
-    private CheckBoxPreference reminders_view;
+    private RingtonePreference ringtone_view;
     private boolean allowed_reminders_value;
+    private CheckBoxPreference reminders_view;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,13 +39,17 @@ public class Home_Prefence extends PreferenceActivity implements Preference.OnPr
         // preference manager
         settings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-        // get notification preference value
-        allowed_notifications_value = settings.getBoolean("allow_notifications", true);
+        //------------ Get views
 
         // get allowed notifications view
         allowed_notifications_view = (CheckBoxPreference) findPreference("allow_notifications");
         // add on change listener
         allowed_notifications_view.setOnPreferenceChangeListener(on_toggle_notifications());
+
+        // get reminders
+        reminders_view = (CheckBoxPreference) findPreference("allow_reminders");
+        // add on change listener
+        reminders_view.setOnPreferenceChangeListener(this);
 
         // get distance to notify view
         distance_to_notify_view = (EditTextPreference) findPreference("distance_to_notify");
@@ -57,6 +61,11 @@ public class Home_Prefence extends PreferenceActivity implements Preference.OnPr
         // add to change listener
         ringtone_view.setOnPreferenceChangeListener(this);
 
+        //------------ Get values
+
+        // get notification preference value
+        allowed_notifications_value = settings.getBoolean("allow_notifications", true);
+
         // get metres view
         chk_metres = (CheckBoxPreference) findPreference("chk_metres");
         // add on change listener
@@ -66,11 +75,6 @@ public class Home_Prefence extends PreferenceActivity implements Preference.OnPr
         chk_yards = (CheckBoxPreference) findPreference("chk_yards");
         // add on change listener
         chk_yards.setOnPreferenceChangeListener(on_toggle_yards());
-
-        // get reminders
-        reminders_view = (CheckBoxPreference) findPreference("allow_reminders");
-        // add on change listener
-        reminders_view.setOnPreferenceChangeListener(this);
 
         // check notification status and change affected views
         check_notification_status();

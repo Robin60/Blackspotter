@@ -6,6 +6,7 @@ import android.content.Context;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 
@@ -31,13 +32,15 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
     private final Activity _activity;
     private final GoogleMap _map;
     private final View _fab;
+    private final Handler _handler;
     private DatabaseReference my_db_ref;
 
-    public sync_DB_online(Context context, Activity activity, GoogleMap map, View view) {
+    public sync_DB_online(Context context, Handler handler, Activity activity, GoogleMap map, View view) {
         _context = context;
         _activity = activity;
         _map = map;
         _fab = view;
+        _handler = handler;
     }
 
     @Override
@@ -56,11 +59,11 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                     BlackspotDBHandler my_db = new BlackspotDBHandler(_context);
 
                     // fetch all points
-                    List<MyPointOnMap> all_map_points = my_db.getAllPoints();
+                    List<MyPointOnMap> all_map_points = my_db.getAllPoints("Sync DB");
 
                     for (final MyPointOnMap my_point : all_map_points) {
                         // fetch country and save online
-                        new AddPointToDB(_context, _activity, _map, _fab).add_this_point(my_point);
+                        new AddPointToDB(_context, _handler, _activity, _map, _fab).add_this_point(my_point);
                     }
                 } else {
                     Log.i("Kibet", "-- Data already in DB");// TODO: 7/29/16 delete

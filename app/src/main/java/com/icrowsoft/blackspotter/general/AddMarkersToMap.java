@@ -33,7 +33,7 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
         BlackspotDBHandler my_db = new BlackspotDBHandler(_context);
 
         // fetch all points from DB
-        List<MyPointOnMap> all_points = my_db.getAllPoints();
+        List<MyPointOnMap> all_points = my_db.getAllPoints("Add markers");
 
         // clear all markers on map
         _activity.runOnUiThread(new Runnable() {

@@ -3,6 +3,7 @@ package com.icrowsoft.blackspotter.general;
 import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.util.Log;
 import android.view.Gravity;
@@ -13,6 +14,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.icrowsoft.blackspotter.SyncDB.complete_day_simulator;
 import com.icrowsoft.blackspotter.encryption.SimpleCrypto;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
@@ -25,12 +27,14 @@ public class AddPointToDB {
     private final Activity _activity;
     private final GoogleMap _map;
     private final View _fab;
+    private final Handler _handler;
     private DatabaseReference my_db_ref;
 
-    public AddPointToDB(Context my_context, Activity activity, GoogleMap map, View view) {
+    public AddPointToDB(Context my_context, Handler handler, Activity activity, GoogleMap map, View view) {
         _context = my_context;
         _activity = activity;
         _map = map;
+        _handler = handler;
         _fab = view;
     }
 
@@ -50,8 +54,8 @@ public class AddPointToDB {
                     // try fetching country from latlng
                     String result = new OnlineChecker().Go_Online(url);
 
-                    if (result == null) {
-                        Log.i("Kibet", "Error: Result is null");
+                    if (result == null || result.startsWith("timeout")) {
+                        Log.e("Kibet", "Error: Result is null|timeout");
                     } else {
                         if (result.startsWith("Unable to resolve host") || result.startsWith("failed to connect to")) {
                             notify_internet_error();
@@ -75,12 +79,28 @@ public class AddPointToDB {
                                 my_db_ref.setValue(new_point, new DatabaseReference.CompletionListener() {
                                     @Override
                                     public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+//                                        Log.i("Kibet","Push successful: "+databaseReference.getKey());
+//                                        Log.i("Kibet","Push parent: "+databaseReference.getDatabase());
+//                                        Log.i("Kibet","Push root: "+databaseReference.getRoot());
+//                                        Log.i("Kibet","Reference: "+databaseReference);
+
                                         if (databaseError == null) {
+                                            // check if its an accident scene
+                                            if (new_point.getDescription().equals("Accident scene")) {
+                                                // get key
+                                                String key = databaseReference.getKey();
+                                                String latitude = new_point.getLatitude();
+                                                String longitude = new_point.getLongitude();
+
+                                                // trigger delete after 24hrs
+                                                new complete_day_simulator(_context, _handler).execute(key, latitude, longitude);
+                                            }
+
                                             // save point to local DB
                                             new BlackspotDBHandler(_context).addMyPoinOnMap(new_point);
 
                                             // show success
-                                            myToaster("Add Successful");
+                                            myToaster("Added Successfully");
 
                                             // re-add markers
                                             new AddMarkersToMap(_context, _activity, _map).execute();

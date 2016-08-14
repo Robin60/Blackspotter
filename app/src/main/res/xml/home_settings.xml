@@ -8,22 +8,6 @@
             android:summaryOff="Notifications OFF"
             android:summaryOn="Notifications ON"
             android:title="Notifications" />
-        <CheckBoxPreference
-            android:defaultValue="true"
-            android:key="chk_metres"
-            android:summary="Distance in meters"
-            android:title="Metres" />
-        <CheckBoxPreference
-            android:defaultValue="false"
-            android:key="chk_yards"
-            android:summary="Distance in  yards"
-            android:title="Yards" />
-        <EditTextPreference
-            android:id="@+id/distance_to_notify"
-            android:defaultValue="500"
-            android:key="distance_to_notify"
-            android:summary="Distance within which to notify(Metres)"
-            android:title="Notify distance" />
         <RingtonePreference
             android:defaultValue="content://settings/system/notification_sound"
             android:key="notif_sound"
@@ -44,7 +28,31 @@
             android:id="@+id/reminder_interval"
             android:defaultValue="15"
             android:key="reminder_interval"
-            android:summary="Time to repeat reminder (mins)"
+            android:summary="Time to reminder (seconds)"
             android:title="Reminder Intervals" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Measurement">
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="chk_metres"
+            android:summary="Distance in meters"
+            android:title="Metres" />
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:key="chk_yards"
+            android:summary="Distance in  yards"
+            android:title="Yards" />
+        <EditTextPreference
+            android:id="@+id/distance_to_notify"
+            android:defaultValue="500"
+            android:key="distance_to_notify"
+            android:summary="Distance within which to notify(Metres)"
+            android:title="Notify distance" />
+        <EditTextPreference
+            android:id="@+id/point_expiry_time"
+            android:defaultValue="180"
+            android:key="point_expiry_time"
+            android:summary="Mock 24 hrs in seconds"
+            android:title="Mock time" />
     </PreferenceCategory>
 </PreferenceScreen>
