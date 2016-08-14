@@ -72,7 +72,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     public void addMyPoinOnMap(MyPointOnMap my_point) {
 
         // check if duplicate
-        boolean found = getPoint(my_point.getLatitude(),my_point.getLongitude());
+        boolean found = getPoint(my_point.getLatitude(), my_point.getLongitude());
 
         // proceed if not found
         if (!found) {

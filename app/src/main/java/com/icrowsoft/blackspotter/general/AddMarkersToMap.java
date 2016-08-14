@@ -44,6 +44,8 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
             }
         });
 
+        // sleep for 2.5 seconds // TODO: 8/14/16  
+
         // loop to create markers
         for (int i = 0; i < all_points.size(); i++) {
             // get point reference
