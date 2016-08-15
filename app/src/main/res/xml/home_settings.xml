@@ -26,7 +26,7 @@
             android:title="Reminders" />
         <EditTextPreference
             android:id="@+id/reminder_interval"
-            android:defaultValue="15"
+            android:defaultValue="150"
             android:key="reminder_interval"
             android:summary="Time to reminder (seconds)"
             android:title="Reminder Intervals" />
@@ -50,7 +50,7 @@
             android:title="Notify distance" />
         <EditTextPreference
             android:id="@+id/point_expiry_time"
-            android:defaultValue="180"
+            android:defaultValue="200"
             android:key="point_expiry_time"
             android:summary="Mock 24 hrs in seconds"
             android:title="Mock time" />

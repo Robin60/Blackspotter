@@ -173,8 +173,7 @@ public class Home_Prefence extends PreferenceActivity implements Preference.OnPr
                 reminders_view.setChecked(true);
             }
         }
-
-        return false;
+        return true;
     }
 
     @Override

@@ -985,6 +985,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             case R.id.cmd_settings:
                 startActivity(new Intent(getBaseContext(), Home_Prefence.class));
                 break;
+            case R.id.cmd_charts:
+                startActivity(new Intent(getBaseContext(), Charts.class));
+                break;
             case R.id.cmd_directions:
 
                 if (my_current_location == null) {

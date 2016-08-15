@@ -138,6 +138,16 @@ public class Notifier extends Service {
     }
 
     private void check_proximity() {
+        // preference manager
+        SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+
+        //capture units to use
+        use_metres = settings.getBoolean("chk_metres", true);
+        distance_to_notify = settings.getString("distance_to_notify", "500");
+        reminder_interval = settings.getString("reminder_interval", "180");
+        allowed_notifications = settings.getBoolean("allow_notifications", true);
+        allowed_reminders = settings.getBoolean("allow_reminders", true);
+
         // start handler to ensure reminders
         my_handler.postDelayed(notifier_resetter, (Integer.parseInt(reminder_interval) * 1000));
 
@@ -150,9 +160,6 @@ public class Notifier extends Service {
             List<MyPointOnMap> all_map_points = my_db.getAllPoints();
 
             for (final MyPointOnMap point_from_DB : all_map_points) {
-                // preference manager
-                SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
-
                 // LatLng of my location
                 LatLng myLocation = new LatLng(my_location.getLatitude(), my_location.getLongitude());
 
@@ -161,13 +168,6 @@ public class Notifier extends Service {
 
                 // calculate distance
                 float distance_in_metres = CalculationByDistance(myLocation, pointOnMap);
-
-                //capture units to use
-                use_metres = settings.getBoolean("chk_metres", true);
-                distance_to_notify = settings.getString("distance_to_notify", "500");
-                reminder_interval = settings.getString("reminder_interval", "180");
-                allowed_notifications = settings.getBoolean("allow_notifications", true);
-                allowed_reminders = settings.getBoolean("allow_reminders", true);
 
                 // check units
                 if (!use_metres) {

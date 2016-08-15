@@ -42,6 +42,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".activities.Home_Prefence" />
+        <activity android:name=".activities.Charts" />
 
         <service android:name=".services.Notifier" />
         <service android:name=".services.OnlineDBListener" />
