@@ -46,7 +46,6 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.ui.PlaceAutocomplete;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -69,9 +68,7 @@ import com.icrowsoft.blackspotter.SyncDB.sync_DB_online;
 import com.icrowsoft.blackspotter.general.AddMarkersToMap;
 import com.icrowsoft.blackspotter.general.AddPointToDB;
 import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
-import com.icrowsoft.blackspotter.my_notifier.MyNotifier;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
-import com.icrowsoft.blackspotter.roundImage.CreateMyRoundedDrawable;
 import com.icrowsoft.blackspotter.roundImage.TextDrawable;
 import com.icrowsoft.blackspotter.services.Notifier;
 import com.icrowsoft.blackspotter.services.OnlineDBListener;
@@ -92,7 +89,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
+public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener, View.OnLongClickListener {
 
     private GoogleMap mMap;
     private Animation fab_close;
@@ -116,7 +113,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
-    private GoogleApiClient client;
     private Marker my_location_marker;
     private TextToSpeech textToSpeech;
     private Handler handler;
@@ -199,7 +195,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
 
         // fetch all points from DB
-        all_points = my_db.getAllPoints("Home");
+        all_points = my_db.getAllPoints();
 
 
         // force actionbar overflow
@@ -232,15 +228,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         fab_fullscreen.setOnClickListener(this);
         fab_speak.setOnClickListener(this);
 
-        // create fab drawables
-        BS_fab_icon = CreateMyRoundedDrawable.CreateRoundedImage("BS");
-        AS_fab_icon = CreateMyRoundedDrawable.CreateRoundedImage("AS");
-        DZ_fab_icon = CreateMyRoundedDrawable.CreateRoundedImage("DZ");
-
-        // change FAB icons
-        fab_black_spot.setImageDrawable(BS_fab_icon);
-        fab_accident_scene.setImageDrawable(AS_fab_icon);
-        fab_danger_zone.setImageDrawable(DZ_fab_icon);
+        // set on long click listener
+        fab_black_spot.setOnLongClickListener(this);
+        fab_accident_scene.setOnLongClickListener(this);
+        fab_danger_zone.setOnLongClickListener(this);
 
         // get FAB animations
         fab_close = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_close);
@@ -316,7 +307,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         new sync_DB_offline(getBaseContext()).execute();
 
         // syc database online
-        new sync_DB_online(getApplicationContext(),handler, my_activity, mMap, fab_add_new).execute();
+        new sync_DB_online(getApplicationContext(), handler, my_activity, mMap, fab_add_new).execute();
 
         // set dummy location
         my_current_location = new Location("dummy_provider");
@@ -486,6 +477,28 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         } catch (ProviderException ex) {
             Log.e("Kibet", "Error: Cell tower not available");
         }
+    }
+
+    @Override
+    public boolean onLongClick(View view) {
+        String title = null;
+        switch (view.getId()) {
+            case R.id.fab_black_spot:
+                title = "Set black spot";
+                break;
+            case R.id.fab_accident_scene:
+                title = "Set accident scene";
+                break;
+            case R.id.fab_danger_zone:
+                title = "Set danger scene";
+                break;
+        }
+        Toast myToast = Toast.makeText(getBaseContext(), title, Toast.LENGTH_SHORT);
+        myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
+        myToast.show();
+
+        // cancels normal click trigger
+        return true;
     }
 
 //    @Override
@@ -805,14 +818,11 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      */
     private void startVoiceRecognitionActivity() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
-//        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
-//        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-//        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Add point on map...");
+//        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak('Add accident scene')...");
         startActivityForResult(intent, REQUEST_CODE);
-
-        // Toast
-        Toast.makeText(getBaseContext(), "Speak", Toast.LENGTH_SHORT).show();
     }
 
     private void toggleFullscreen() {
@@ -874,19 +884,19 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 toggleFullscreen();
                 break;
             case R.id.fab_speak:
-//                // Check if speech recognition is supported
-//                PackageManager pm = getPackageManager();
-//                List<ResolveInfo> activities = pm.queryIntentActivities(
-//                        new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
-//                if (activities.size() == 0) {
-//                    Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
-//                } else {
-//                    // start voice recognition activity
-//                    startVoiceRecognitionActivity();
-//                }
+                // Check if speech recognition is supported
+                PackageManager pm = getPackageManager();
+                List<ResolveInfo> activities = pm.queryIntentActivities(
+                        new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+                if (activities.size() == 0) {
+                    Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
+                } else {
+                    // start voice recognition activity
+                    startVoiceRecognitionActivity();
+                }
 
-                // todo delete
-                new MyNotifier().notify_user(getBaseContext(), "Test", "Warning");
+//                // todo delete
+//                MyNotifier.notify_user(getBaseContext(), "Test", "Warning");
 
                 break;
         }
@@ -923,7 +933,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         new_point.setDescription(description);
 
                         // add point to DB
-                        new AddPointToDB(getApplicationContext(),handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+                        new AddPointToDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
                     }
                 }).onNegative(new MaterialDialog.SingleButtonCallback() {
             @Override
@@ -951,7 +961,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         new_point.setDescription(description);
 
         // add point to DB
-        new AddPointToDB(getApplicationContext(), handler,my_activity, mMap, fab_add_new).add_this_point(new_point);
+        new AddPointToDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
 
         // play sound
         textToSpeech.speak(description + " successfully added", TextToSpeech.QUEUE_FLUSH, null);
@@ -1042,6 +1052,13 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // trigger rerun of notifier
+        sendBroadcast(new Intent("REQUEST_TO_SERVICE"));
+    }
+
     /**
      * Handle the results from the voice recognition activity.
      */
@@ -1056,13 +1073,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                     Log.i("Kibet", "Matches: " + matches);
 
-                    // get first match
-                    String first_match = matches.get(0);
-
-                    Toast.makeText(getBaseContext(), ">>" + first_match + "<<", Toast.LENGTH_SHORT).show();
-
                     // handle voice command
-                    handle_voice_command(first_match);
+                    handle_voice_command(matches);
 
                     break;
                 case 888:
@@ -1086,22 +1098,47 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void handle_voice_command(String first_match) {
+    private void handle_voice_command(ArrayList<String> matches) {
+        // get first match
+        String first_match = matches.get(0);
 
-        // check for matches
-        if (first_match.equals("Add a black spot")) {
+        Toast.makeText(getBaseContext(), ">>" + first_match + "<<", Toast.LENGTH_SHORT).show();
 
-            // add point to DB
-            add_location_to_DB_via_voice("Black spot", my_current_location);
-        } else if (first_match.equals("Add a danger zone")) {
+        // initialize match found
+        boolean match_found = true;
 
-            // add point to DB
-            add_location_to_DB_via_voice("Danger zone", my_current_location);
-        } else if (first_match.equals("Add accident scene")) {
+        // loop through all matches
+        for (int i = 0; i < matches.size(); i++) {
+            // get current word in loop
+            String wording = matches.get(i);
 
-            // add point to DB
-            add_location_to_DB_via_voice("Accident scene", my_current_location);
-        } else {
+            // check for matches
+            if (wording.equals("Add a black spot")) {
+                // add point to DB
+                add_location_to_DB_via_voice("Black spot", my_current_location);
+
+                // break loop
+                break;
+            } else if (wording.equals("Add a danger zone")) {
+                // add point to DB
+                add_location_to_DB_via_voice("Danger zone", my_current_location);
+
+                // break loop
+                break;
+            } else if (wording.equals("Add accident scene")) {
+                // add point to DB
+                add_location_to_DB_via_voice("Accident scene", my_current_location);
+
+                // break loop
+                break;
+            } else {
+                // no match found
+                match_found = false;
+            }
+        }
+
+        // check if there was no matches
+        if (!match_found) {
             // ask for retrial
             textToSpeech.speak("Please try again", TextToSpeech.QUEUE_FLUSH, null);
 
@@ -1116,6 +1153,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 startVoiceRecognitionActivity();
             }
         }
+
     }
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {

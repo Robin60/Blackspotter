@@ -93,10 +93,10 @@ public class OnlineDBListener extends Service {
 
                     // insert new points to DB
                     insert_into_table(my_point);
-
-                    // send broadcast
-                    sendBroadcast(new Intent("REFRESH_MARKERS"));
                 }
+
+                // send broadcast
+                sendBroadcast(new Intent("REFRESH_MARKERS"));
             }
 
             @Override

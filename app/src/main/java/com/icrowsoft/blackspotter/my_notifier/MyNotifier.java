@@ -13,7 +13,7 @@ import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.activities.Home;
 
 public class MyNotifier {
-    public void notify_user(Context context, String title, String msg) {
+    public static void notify_user(Context context, String title, String msg) {
 
         Intent intent = new Intent(context, Home.class);// TODO: 7/30/16 handle notif clicks
 

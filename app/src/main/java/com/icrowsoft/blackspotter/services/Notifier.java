@@ -44,7 +44,6 @@ public class Notifier extends Service {
     };
     private Handler my_handler;
     private boolean user_already_notified;
-    private MyNotifier my_notifier_instance;
     private boolean use_metres;
     private String distance_to_notify;
     private String reminder_interval;
@@ -70,9 +69,6 @@ public class Notifier extends Service {
 
         // get my location
         getMyLocation();
-
-        // create notifier instance
-        my_notifier_instance = new MyNotifier();
 
         // check proximity to any danger zone
         check_proximity();
@@ -142,7 +138,8 @@ public class Notifier extends Service {
     }
 
     private void check_proximity() {
-        // TODO: 7/30/16 check range
+        // start handler to ensure reminders
+        my_handler.postDelayed(notifier_resetter, (Integer.parseInt(reminder_interval) * 1000));
 
         // notify if not already done
         if (!user_already_notified) {
@@ -150,7 +147,7 @@ public class Notifier extends Service {
             BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
 
             // fetch all points
-            List<MyPointOnMap> all_map_points = my_db.getAllPoints("Notifier");
+            List<MyPointOnMap> all_map_points = my_db.getAllPoints();
 
             for (final MyPointOnMap point_from_DB : all_map_points) {
                 // preference manager
@@ -168,7 +165,7 @@ public class Notifier extends Service {
                 //capture units to use
                 use_metres = settings.getBoolean("chk_metres", true);
                 distance_to_notify = settings.getString("distance_to_notify", "500");
-                reminder_interval = settings.getString("reminder_interval", "3");
+                reminder_interval = settings.getString("reminder_interval", "180");
                 allowed_notifications = settings.getBoolean("allow_notifications", true);
                 allowed_reminders = settings.getBoolean("allow_reminders", true);
 
@@ -178,17 +175,9 @@ public class Notifier extends Service {
                     distance_in_metres = (float) (distance_in_metres * 1.09361);
                 }
 
-                // start handler to ensure reminders
-                my_handler.postDelayed(notifier_resetter, (Integer.parseInt(reminder_interval) * 1000));
-
-// TODO: 7/30/16 check whether reminders are on
-
-
-                Log.i("Kibet", ">>>" + distance_in_metres + "<<<");
-
                 // check if within proximity
                 if (distance_in_metres < Integer.parseInt(distance_to_notify)) {
-                    Log.i("Kibet", "Close to >>> " + point_from_DB.getName());
+
                     // reset
                     user_already_notified = true;
 
@@ -197,11 +186,11 @@ public class Notifier extends Service {
                         if (global_distance_in_metres == distance_in_metres) {
                             if (allowed_reminders) {
                                 //spawn notification
-                                my_notifier_instance.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + point_from_DB.getName());
+                                MyNotifier.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + point_from_DB.getName());
                             }
                         } else {
                             //spawn notification
-                            my_notifier_instance.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + point_from_DB.getName());
+                            MyNotifier.notify_user(getBaseContext(), "Warning!", "Proximity alert: " + point_from_DB.getName());
                         }
                     }
 

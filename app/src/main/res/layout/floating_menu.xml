@@ -15,10 +15,11 @@
         android:layout_marginRight="12dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/caution"
+        android:src="@drawable/red_dot"
         android:visibility="gone"
-        app:backgroundTint="?colorPrimary"
-        app:fabSize="mini" />
+        app:backgroundTint="@color/floating_fab_color"
+        app:fabSize="mini" /><!--android:src="@drawable/caution"
+        android:visibility="gone"-->
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_accident_scene"
@@ -29,9 +30,9 @@
         android:layout_marginRight="12dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/black_spot"
+        android:src="@drawable/azure_dot"
         android:visibility="gone"
-        app:backgroundTint="?colorPrimary"
+        app:backgroundTint="@color/floating_fab_color"
         app:fabSize="mini" />
 
     <android.support.design.widget.FloatingActionButton
@@ -43,9 +44,9 @@
         android:layout_marginRight="12dp"
         android:elevation="1dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/caution"
+        android:src="@drawable/yellow_dot"
         android:visibility="gone"
-        app:backgroundTint="?colorPrimary"
+        app:backgroundTint="@color/floating_fab_color"
         app:fabSize="mini" />
 
     <android.support.design.widget.FloatingActionButton

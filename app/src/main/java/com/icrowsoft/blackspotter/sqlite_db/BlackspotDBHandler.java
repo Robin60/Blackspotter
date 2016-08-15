@@ -115,7 +115,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     }
 
     // Getting All Contacts
-    public List<MyPointOnMap> getAllPoints(String caller) {
+    public List<MyPointOnMap> getAllPoints() {
 
         List<MyPointOnMap> myPointsList = new ArrayList<>();
 
@@ -125,7 +125,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
-        Log.i("Kibet", caller+": COUNT >> " + cursor.getCount());// TODO: 7/29/16 remove this
+        Log.i("Kibet", "COUNT >> " + cursor.getCount());// TODO: 7/29/16 remove this
 
         // looping through all rows and adding to list
         if (cursor.moveToFirst()) {

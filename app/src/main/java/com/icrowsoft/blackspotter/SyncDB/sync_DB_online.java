@@ -59,7 +59,7 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                     BlackspotDBHandler my_db = new BlackspotDBHandler(_context);
 
                     // fetch all points
-                    List<MyPointOnMap> all_map_points = my_db.getAllPoints("Sync DB");
+                    List<MyPointOnMap> all_map_points = my_db.getAllPoints();
 
                     for (final MyPointOnMap my_point : all_map_points) {
                         // fetch country and save online
