@@ -7,10 +7,13 @@ import android.os.AsyncTask;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.icrowsoft.blackspotter.adapters.MyInfoWindowAdapter;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -20,11 +23,13 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
     private final Context _context;
     private final Activity _activity;
     private final GoogleMap _map;
+    private final HashMap<String, MyPointOnMap> my_markers;
 
     public AddMarkersToMap(Context context, Activity map_activity, GoogleMap map) {
         _context = context;
         _activity = map_activity;
         _map = map;
+        my_markers = new HashMap<>();
     }
 
     @Override
@@ -47,7 +52,7 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
         // loop to create markers
         for (int i = 0; i < all_points.size(); i++) {
             // get point reference
-            MyPointOnMap my_point = all_points.get(i);
+            final MyPointOnMap my_point = all_points.get(i);
 
             // get description
             String description = my_point.getDescription();
@@ -55,7 +60,7 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
             // Add a marker
             LatLng new_point = new LatLng(Double.parseDouble(my_point.getLatitude()), Double.parseDouble(my_point.getLongitude()));
             final MarkerOptions point_on_map = new MarkerOptions();
-            point_on_map.title(my_point.getName());
+            point_on_map.title("" + i);
             point_on_map.draggable(false);
             point_on_map.alpha(0.9f);
             point_on_map.position(new_point);
@@ -74,11 +79,21 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
                 @Override
                 public void run() {
                     //add marker
-                    _map.addMarker(point_on_map);
+                    Marker marker = _map.addMarker(point_on_map);
+
+                    // add to my markers
+                    my_markers.put(marker.getTitle(), my_point);
+//
+//                    MyPointOnMap aa = my_markers.get(marker.getTitle());
+//
+//
+
+                    // set clicks on info windows
+                    _map.setInfoWindowAdapter(new MyInfoWindowAdapter(_activity, my_markers));
+
+//                    _activity.sendBroadcast(new Intent("RECEIVE_HASH_MAP").putExtra("my_markers",my_markers));
                 }
             });
-
-
         }
         return null;
     }

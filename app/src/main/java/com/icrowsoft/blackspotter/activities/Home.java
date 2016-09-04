@@ -11,8 +11,6 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -54,7 +52,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -65,8 +62,9 @@ import com.google.maps.android.PolyUtil;
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.SyncDB.sync_DB_offline;
 import com.icrowsoft.blackspotter.SyncDB.sync_DB_online;
+import com.icrowsoft.blackspotter.adapters.MyInfoWindowAdapter;
 import com.icrowsoft.blackspotter.general.AddMarkersToMap;
-import com.icrowsoft.blackspotter.general.AddPointToDB;
+import com.icrowsoft.blackspotter.general.AddPointToOnlineDB;
 import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.roundImage.TextDrawable;
@@ -83,13 +81,12 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.security.ProviderException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener, View.OnLongClickListener {
+public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
 
     private GoogleMap mMap;
     private Animation fab_close;
@@ -116,6 +113,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private Marker my_location_marker;
     private TextToSpeech textToSpeech;
     private Handler handler;
+    private HashMap<String,MyPointOnMap> my_markers;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -228,19 +226,19 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         fab_fullscreen.setOnClickListener(this);
         fab_speak.setOnClickListener(this);
 
-        // set on long click listener
-        fab_black_spot.setOnLongClickListener(this);
-        fab_accident_scene.setOnLongClickListener(this);
-        fab_danger_zone.setOnLongClickListener(this);
-
-        // get FAB animations
-        fab_close = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_close);
-        fab_open = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_open);
-
         // add click events
         fab_black_spot.setOnClickListener(this);
         fab_accident_scene.setOnClickListener(this);
         fab_danger_zone.setOnClickListener(this);
+
+//        // set on long click listener
+//        fab_black_spot.setOnLongClickListener(this);
+//        fab_accident_scene.setOnLongClickListener(this);
+//        fab_danger_zone.setOnLongClickListener(this);
+
+        // get FAB animations
+        fab_close = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_close);
+        fab_open = AnimationUtils.loadAnimation(getApplication(), R.anim.fab_open);
 
         // track main FAB clicks
         fab_add_new_clicked = false;
@@ -341,165 +339,180 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
         mMap.getUiSettings().setZoomControlsEnabled(false);
 
-        // set clicks on info windows
-        mMap.setOnInfoWindowClickListener(this);
-
         // add markers
         new AddMarkersToMap(getBaseContext(), my_activity, mMap).execute();
+
+        // set clicks on info windows
+        mMap.setInfoWindowAdapter(new MyInfoWindowAdapter(this, my_markers));
     }
 
     @SuppressWarnings("MissingPermission")
     private void track_me() {
-        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-            @Override
-            public void onMyLocationChange(Location location) {
-                // remove my location marker
-                if (my_location_marker != null) {
-                    my_location_marker.remove();
-                }
+//        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+//            @Override
+//            public void onMyLocationChange(Location location) {
+//                // remove my location marker
+//                if (my_location_marker != null) {
+//                    my_location_marker.remove();
+//                }
+//
+//                float accuracy = location.getAccuracy();
+//
+//                // update my location
+//                my_current_location = location;
+//
+//                // create marker
+//                MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+//
+//                // Changing marker icon
+//                marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//
+//                // adding marker
+//                my_location_marker = mMap.addMarker(marker);xxxx
+//
+//                // display lbl_accuracy
+//                lbl_accuracy.setText("Acc: " + accuracy);
+//            }
+//        });
 
-                float accuracy = location.getAccuracy();
+//        // get location manager
+//        LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+//
+//        try {
+//            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 600000,
+//                    500, new LocationListener() {// TODO: 8/6/16 change values here to match settings
+//                        @Override
+//                        public void onLocationChanged(Location location) {
+//                            Log.i("Kibet", "My location updated by GPS");
+//
+//                            // remove my location marker
+//                            if (my_location_marker != null) {
+//                                my_location_marker.remove();
+//                            }
+//
+//                            float accuracy = location.getAccuracy();
+//
+//                            // update my location
+//                            my_current_location = location;
+//
+//                            // create marker
+//                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+//
+//                            // Changing marker icon
+//                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//
+//                            // add a point at the end of my_markers
+//                            int pos = my_markers.size();
+//
+//                            MyPointOnMap me = new MyPointOnMap();
+//                            me.setName("My Location");
+//                            me.setLatitude(""+location.getLatitude());
+//                            me.setLongitude(""+location.getLongitude());
+//
+//                            my_markers.put(""+pos,me);
+//
+//                            // adding marker
+//                            my_location_marker = mMap.addMarker(marker);
+//
+//                            // display lbl_accuracy
+//                            lbl_accuracy.setText("Acc: " + accuracy);
+//                        }
+//
+//                        @Override
+//                        public void onStatusChanged(String s, int i, Bundle bundle) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onProviderEnabled(String s) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onProviderDisabled(String s) {
+//
+//                        }
+//                    });
+//        } catch (ProviderException ex) {
+//            Log.e("Kibet", "Error: GPS not available");
+//        }
 
-                // update my location
-                my_current_location = location;
-
-                // create marker
-                MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-
-                // Changing marker icon
-                marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                // adding marker
-                my_location_marker = mMap.addMarker(marker);
-
-                // display lbl_accuracy
-                lbl_accuracy.setText("Acc: " + accuracy);
-            }
-        });
-
-        // get location manager
-        LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-
-        try {
-            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 600000,
-                    500, new LocationListener() {// TODO: 8/6/16 change values here to match settings
-                        @Override
-                        public void onLocationChanged(Location location) {
-                            Log.i("Kibet", "My location updated by GPS");
-
-                            // remove my location marker
-                            if (my_location_marker != null) {
-                                my_location_marker.remove();
-                            }
-
-                            float accuracy = location.getAccuracy();
-
-                            // update my location
-                            my_current_location = location;
-
-                            // create marker
-                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-
-                            // Changing marker icon
-                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                            // adding marker
-                            my_location_marker = mMap.addMarker(marker);
-
-                            // display lbl_accuracy
-                            lbl_accuracy.setText("Acc: " + accuracy);
-                        }
-
-                        @Override
-                        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-                        }
-
-                        @Override
-                        public void onProviderEnabled(String s) {
-
-                        }
-
-                        @Override
-                        public void onProviderDisabled(String s) {
-
-                        }
-                    });
-        } catch (ProviderException ex) {
-            Log.e("Kibet", "Error: GPS not available");
-        }
-
-        try {
-            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500000,
-                    1000, new LocationListener() {// TODO: 8/6/16 change values here to match settings
-                        @Override
-                        public void onLocationChanged(Location location) {
-                            Log.i("Kibet", "My location updated by Cell tower");
-
-                            // remove my location marker
-                            if (my_location_marker != null) {
-                                my_location_marker.remove();
-                            }
-
-                            float accuracy = location.getAccuracy();
-
-                            // update my location
-                            my_current_location = location;
-
-                            // create marker
-                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-
-                            // Changing marker icon
-                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                            // adding marker
-                            my_location_marker = mMap.addMarker(marker);
-
-                            // display lbl_accuracy
-                            lbl_accuracy.setText("Acc: " + accuracy);
-                        }
-
-                        @Override
-                        public void onStatusChanged(String s, int i, Bundle bundle) {
-
-                        }
-
-                        @Override
-                        public void onProviderEnabled(String s) {
-
-                        }
-
-                        @Override
-                        public void onProviderDisabled(String s) {
-
-                        }
-                    });
-        } catch (ProviderException ex) {
-            Log.e("Kibet", "Error: Cell tower not available");
-        }
+//        try {
+//            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500000,
+//                    1000, new LocationListener() {// TODO: 8/6/16 change values here to match settings
+//                        @Override
+//                        public void onLocationChanged(Location location) {
+//                            Log.i("Kibet", "My location updated by Cell tower");
+//
+//                            // remove my location marker
+//                            if (my_location_marker != null) {
+//                                my_location_marker.remove();
+//                            }
+//
+//                            float accuracy = location.getAccuracy();
+//
+//                            // update my location
+//                            my_current_location = location;
+//
+//                            // create marker
+//                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+//
+//                            // Changing marker icon
+//                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//
+//                            // adding marker
+//                            my_location_marker = mMap.addMarker(marker);
+//
+//                            // display lbl_accuracy
+//                            lbl_accuracy.setText("Acc: " + accuracy);xxxx
+//                        }
+//
+//                        @Override
+//                        public void onStatusChanged(String s, int i, Bundle bundle) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onProviderEnabled(String s) {
+//
+//                        }
+//
+//                        @Override
+//                        public void onProviderDisabled(String s) {
+//
+//                        }
+//                    });
+//        } catch (ProviderException ex) {
+//            Log.e("Kibet", "Error: Cell tower not available");
+//        }
     }
 
-    @Override
-    public boolean onLongClick(View view) {
-        String title = null;
-        switch (view.getId()) {
-            case R.id.fab_black_spot:
-                title = "Set black spot";
-                break;
-            case R.id.fab_accident_scene:
-                title = "Set accident scene";
-                break;
-            case R.id.fab_danger_zone:
-                title = "Set danger scene";
-                break;
-        }
-        Toast myToast = Toast.makeText(getBaseContext(), title, Toast.LENGTH_SHORT);
-        myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
-        myToast.show();
-
-        // cancels normal click trigger
-        return true;
-    }
+//    @Override
+//    public boolean onLongClick(View view) {
+//        Log.i("Kibet", "Long click detected: " + view.getId());
+//        String title = " ";
+//        switch (view.getId()) {
+//            case R.id.fab_black_spot:
+//                title = "Set black spot";
+//                Toast.makeText(Home.this, title, Toast.LENGTH_SHORT).show();
+//                break;
+//            case R.id.fab_accident_scene:
+//                title = "Set accident scene";
+//                Toast.makeText(Home.this, title, Toast.LENGTH_SHORT).show();
+//                break;
+//            case R.id.fab_danger_zone:
+//                title = "Set danger scene";
+//                Toast.makeText(Home.this, title, Toast.LENGTH_SHORT).show();
+//                break;
+//        }
+//
+////        Toast myToast = Toast.makeText(getBaseContext(), title, Toast.LENGTH_SHORT);
+////        myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
+////        myToast.show();
+//
+//        // cancels normal click trigger
+//        return true;
+//    }
 
 //    @Override
 //    public void onStart() {
@@ -821,7 +834,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 //        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak('Add accident scene')...");
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak('Set accident scene')...");
         startActivityForResult(intent, REQUEST_CODE);
     }
 
@@ -933,7 +946,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         new_point.setDescription(description);
 
                         // add point to DB
-                        new AddPointToDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+                        new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
                     }
                 }).onNegative(new MaterialDialog.SingleButtonCallback() {
             @Override
@@ -961,7 +974,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         new_point.setDescription(description);
 
         // add point to DB
-        new AddPointToDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+        new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
 
         // play sound
         textToSpeech.speak(description + " successfully added", TextToSpeech.QUEUE_FLUSH, null);
@@ -1002,8 +1015,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                                         Manifest.permission.ACCESS_FINE_LOCATION}, 111);
                     } else {
                         try {
+                            Toast.makeText(getBaseContext(), "Pick a destination", Toast.LENGTH_SHORT).show();
                             int PLACE_PICKER_REQUEST = 888;
-                            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_FULLSCREEN)
+                            Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
 //                                    .setFilter(typeFilter)
                                     .build(this);
                             startActivityForResult(intent, PLACE_PICKER_REQUEST);
@@ -1011,6 +1025,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                             // TODO: Handle the error.
                         } catch (GooglePlayServicesNotAvailableException e) {
                             // TODO: Handle the error.
+                            Toast.makeText(Home.this, "Google Play Services Missing", Toast.LENGTH_SHORT).show();
                         }
 
 //                        // request for location picker
@@ -1067,14 +1082,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.i("Kibet", "Data: " + data);
+
         if (resultCode == RESULT_OK) {
             switch (requestCode) {
                 case 777:
                     // get String values the recognition engine thought it heard
                     ArrayList<String> matches = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
-
-                    Log.i("Kibet", "Matches: " + matches);
 
                     // handle voice command
                     handle_voice_command(matches);
@@ -1102,38 +1115,48 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     }
 
     private void handle_voice_command(ArrayList<String> matches) {
-        // get first match
-        String first_match = matches.get(0);
-
-        Toast.makeText(getBaseContext(), ">>" + first_match + "<<", Toast.LENGTH_SHORT).show();
 
         // initialize match found
         boolean match_found = true;
 
         // loop through all matches
+        String confirmation = "";
         for (int i = 0; i < matches.size(); i++) {
             // get current word in loop
             String wording = matches.get(i);
+            Log.i("Kibet", "Checking " + wording);
 
             // check for matches
-            if (wording.equals("Add a black spot")) {
+            if (wording.equals("set black spot")) {
                 // add point to DB
                 add_location_to_DB_via_voice("Black spot", my_current_location);
 
+                // set confirmation message
+                confirmation = "Black spot added";
+
                 // break loop
                 break;
-            } else if (wording.equals("Add a danger zone")) {
+            } else if (wording.equals("set danger zone")) {
                 // add point to DB
                 add_location_to_DB_via_voice("Danger zone", my_current_location);
 
-                // break loop
-                break;
-            } else if (wording.equals("Add accident scene")) {
-                // add point to DB
-                add_location_to_DB_via_voice("Accident scene", my_current_location);
+                // set confirmation message
+                confirmation = "Danger zone added";
 
                 // break loop
                 break;
+            } else if (wording.equals("set accident scene")) {
+                // add point to DB
+                add_location_to_DB_via_voice("Accident scene", my_current_location);
+
+                // set confirmation message
+                confirmation = "Accident scene added";
+
+                // break loop
+                break;
+            } else if (wording.equals("cancel")) {
+                // set confirmation message
+                confirmation = "Cancel";
             } else {
                 // no match found
                 match_found = false;
@@ -1142,21 +1165,35 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
         // check if there was no matches
         if (!match_found) {
-            // ask for retrial
-            textToSpeech.speak("Please try again", TextToSpeech.QUEUE_FLUSH, null);
-
-            // relaunch speech recognizer
-            PackageManager pm = getPackageManager();
-            List<ResolveInfo> activities = pm.queryIntentActivities(
-                    new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
-            if (activities.size() == 0) {
-                Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
+            if (confirmation.equals("Cancel")) {
+                // ask for retrial
+                textToSpeech.speak("Request canceled", TextToSpeech.QUEUE_FLUSH, null);
             } else {
-                // start voice recognition activity
-                startVoiceRecognitionActivity();
-            }
-        }
+                // ask for retrial
+                textToSpeech.speak("Please try again", TextToSpeech.QUEUE_FLUSH, null);
 
+                // sleep
+                try {
+                    Thread.sleep(2000);
+                } catch (Exception e) {
+                    // error
+                }
+
+                // relaunch speech recognizer
+                PackageManager pm = getPackageManager();
+                List<ResolveInfo> activities = pm.queryIntentActivities(
+                        new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH), 0);
+                if (activities.size() == 0) {
+                    Snackbar.make(fab_add_new, "Recognizer not present", Snackbar.LENGTH_SHORT).show();
+                } else {
+                    // start voice recognition activity
+                    startVoiceRecognitionActivity();
+                }
+            }
+        } else {
+            // confirm action
+            textToSpeech.speak(confirmation, TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 
     private String getDirectionsUrl(LatLng origin, LatLng dest) {

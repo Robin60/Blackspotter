@@ -22,7 +22,7 @@ import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 /**
  * Created by teardrops on 7/29/16.
  */
-public class AddPointToDB {
+public class AddPointToOnlineDB {
     private final Context _context;
     private final Activity _activity;
     private final GoogleMap _map;
@@ -30,7 +30,7 @@ public class AddPointToDB {
     private final Handler _handler;
     private DatabaseReference my_db_ref;
 
-    public AddPointToDB(Context my_context, Handler handler, Activity activity, GoogleMap map, View view) {
+    public AddPointToOnlineDB(Context my_context, Handler handler, Activity activity, GoogleMap map, View view) {
         _context = my_context;
         _activity = activity;
         _map = map;
@@ -60,6 +60,9 @@ public class AddPointToDB {
                         if (result.startsWith("Unable to resolve host") || result.startsWith("failed to connect to")) {
                             notify_internet_error();
                         } else {
+                            // handle no country
+                            // TODO: 9/4/16
+
                             // set time to server time(last_modified)
                             new_point.setLastModified("" + System.currentTimeMillis());
 
@@ -73,7 +76,7 @@ public class AddPointToDB {
 
                                 // get Firebase reference
                                 DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
-                                my_db_ref = online_DB.child("blackspots").child(result).child(encrypted_latitude);
+                                my_db_ref = online_DB.child("blackspots").child("KE").child(encrypted_latitude);
 
                                 // save new location
                                 my_db_ref.setValue(new_point, new DatabaseReference.CompletionListener() {

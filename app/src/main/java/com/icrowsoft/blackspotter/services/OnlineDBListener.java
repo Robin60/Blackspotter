@@ -55,6 +55,8 @@ public class OnlineDBListener extends Service {
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
 //                    String key = postSnapshot.getKey();
 
+                    Log.i("Kibet", "--" + postSnapshot.toString());
+
                     MyPointOnMap my_point = new MyPointOnMap();
                     my_point.setName(postSnapshot.child("name").getValue().toString());
                     my_point.setLatitude(postSnapshot.child("latitude").getValue().toString());

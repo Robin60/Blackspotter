@@ -33,11 +33,13 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
         String[] black_spots_names = _context.getResources().getStringArray(R.array.black_spot_names);
         String[] black_spots_lats = _context.getResources().getStringArray(R.array.black_spot_latitudes);
         String[] black_spots_lons = _context.getResources().getStringArray(R.array.black_spot_longitdes);
+        String[] black_spots_causes = _context.getResources().getStringArray(R.array.black_spot_causes);
 
         // fetch danger zones from resources
         String[] danger_zone_names = _context.getResources().getStringArray(R.array.danger_zone_names);
         String[] danger_zone_lats = _context.getResources().getStringArray(R.array.danger_zone_latitudes);
         String[] danger_zone_lons = _context.getResources().getStringArray(R.array.danger_zone_longitdes);
+        String[] danger_zone_causes = _context.getResources().getStringArray(R.array.danger_zone_causes);
 
         // insert each black spot
         for (int i = 0; i < black_spots_names.length; i++) {
@@ -45,6 +47,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
             my_point.setName(black_spots_names[i]);
             my_point.setLatitude(black_spots_lats[i]);
             my_point.setLongitude(black_spots_lons[i]);
+            my_point.setCause(black_spots_causes[i]);
             my_point.setCases(0);
             my_point.setLastModified("" + System.currentTimeMillis());
             my_point.setCountry("");
@@ -59,6 +62,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
             my_point.setName(danger_zone_names[i]);
             my_point.setLatitude(danger_zone_lats[i]);
             my_point.setLongitude(danger_zone_lons[i]);
+            my_point.setCause(danger_zone_causes[i]);
             my_point.setCases(0);
             my_point.setLastModified("" + System.currentTimeMillis());
             my_point.setCountry("");

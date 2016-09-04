@@ -3,8 +3,6 @@ package com.icrowsoft.blackspotter.SyncDB;
 
 import android.app.Activity;
 import android.content.Context;
-import android.location.Address;
-import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -16,13 +14,11 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.icrowsoft.blackspotter.general.AddPointToDB;
+import com.icrowsoft.blackspotter.general.AddPointToOnlineDB;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Created by teardrops on 7/17/16.
@@ -63,7 +59,7 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
 
                     for (final MyPointOnMap my_point : all_map_points) {
                         // fetch country and save online
-                        new AddPointToDB(_context, _handler, _activity, _map, _fab).add_this_point(my_point);
+                        new AddPointToOnlineDB(_context, _handler, _activity, _map, _fab).add_this_point(my_point);
                     }
                 } else {
                     Log.i("Kibet", "-- Data already in DB");// TODO: 7/29/16 delete
@@ -79,21 +75,21 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
         return null;
     }
 
-    public static String getCountryName(Context context, double latitude, double longitude) {
-        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-        List<Address> addresses = null;
-        try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-            Address result;
-
-            Log.i("Kibet", "Addresses: " + addresses);
-
-            if (addresses != null && !addresses.isEmpty()) {
-                return addresses.get(0).getCountryName();
-            }
-        } catch (IOException ignored) {
-            //do something
-        }
-        return null;
-    }
+//    public static String getCountryName(Context context, double latitude, double longitude) {
+//        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+//        List<Address> addresses = null;
+//        try {
+//            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+//            Address result;
+//
+//            Log.i("Kibet", "Addresses: " + addresses);
+//
+//            if (addresses != null && !addresses.isEmpty()) {
+//                return addresses.get(0).getCountryName();
+//            }
+//        } catch (IOException ignored) {
+//            //do something
+//        }
+//        return null;
+//    }
 }

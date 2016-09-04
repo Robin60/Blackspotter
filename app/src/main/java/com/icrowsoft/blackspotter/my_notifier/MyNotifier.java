@@ -8,7 +8,6 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
-import android.util.Log;
 
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.activities.Home;
@@ -35,8 +34,6 @@ public class MyNotifier {
         boolean sounds_on = settings.getBoolean("allow_notifications", true);
 
         String ringtone = settings.getString("notif_sound", "");//DEFAULT_SOUND
-
-        Log.i("Kibet", "Ringtone: " + ringtone);
 
         // set ringtone
         if (sounds_on) {

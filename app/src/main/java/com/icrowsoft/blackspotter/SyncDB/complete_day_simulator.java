@@ -38,7 +38,7 @@ public class complete_day_simulator extends AsyncTask<String, String, String> {
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
 
         // get expiry time
-        String distance_to_notify = settings.getString("point_expiry_time", "180");
+        String scene_expiry_time = settings.getString("point_expiry_time", "180");
 
         // start reminder
         _handler.postDelayed(new Runnable() {
@@ -61,7 +61,7 @@ public class complete_day_simulator extends AsyncTask<String, String, String> {
                 // delete from local database
                 new BlackspotDBHandler(_context).deletePoint(point_to_delete);
             }
-        }, (Integer.parseInt(distance_to_notify) * 1000));
+        }, (Integer.parseInt(scene_expiry_time) * 1000));
 
         return null;
     }

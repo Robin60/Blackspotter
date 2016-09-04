@@ -35,6 +35,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     private static final String KEY_LAST_MODIFIED = "last_modified";
     private static final String KEY_COUNTRY = "country";
     private static final String KEY_DESCRIPTION = "description";
+    private static final String KEY_PHOTO = "photo";
+    private static final String KEY_CAUSE = "cause";
 
     public BlackspotDBHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -50,6 +52,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                 KEY_CASES + " int," +
                 KEY_LAST_MODIFIED + " text," +
                 KEY_DESCRIPTION + " text," +
+                KEY_PHOTO + " text," +
+                KEY_CAUSE + " text," +
                 KEY_COUNTRY + " text)";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -85,6 +89,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
             values.put(KEY_CASES, my_point.getCases());
             values.put(KEY_LAST_MODIFIED, my_point.getLastModified());
             values.put(KEY_DESCRIPTION, my_point.getDescription());
+            values.put(KEY_PHOTO, my_point.getPhoto());
+            values.put(KEY_CAUSE, my_point.getCause());
             values.put(KEY_COUNTRY, my_point.getCountry());
 
             // Inserting Row
@@ -138,6 +144,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                 my_point.setLastModified(cursor.getString(cursor.getColumnIndex(KEY_LAST_MODIFIED)));
                 my_point.setDescription(cursor.getString(cursor.getColumnIndex(KEY_DESCRIPTION)));
                 my_point.setCountry(cursor.getString(cursor.getColumnIndex(KEY_COUNTRY)));
+                my_point.setPhoto(cursor.getString(cursor.getColumnIndex(KEY_PHOTO)));
+                my_point.setCause(cursor.getString(cursor.getColumnIndex(KEY_CAUSE)));
 
                 // Adding contact to list
                 myPointsList.add(my_point);
@@ -160,6 +168,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         values.put(KEY_LAST_MODIFIED, my_point.getLastModified());
         values.put(KEY_DESCRIPTION, my_point.getDescription());
         values.put(KEY_COUNTRY, my_point.getCountry());
+        values.put(KEY_PHOTO, my_point.getPhoto());
+        values.put(KEY_CAUSE, my_point.getCause());
 
         // updating row
         return db.update(TABLE_BLACKSPOTS, values, KEY_LATITUDE + " = ?",
@@ -169,21 +179,20 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     // Deleting single contact
     public void deletePoint(MyPointOnMap my_point) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_BLACKSPOTS, KEY_LATITUDE + " = ?",
-                new String[]{String.valueOf(my_point.getLatitude())});
+        db.delete(TABLE_BLACKSPOTS, KEY_LATITUDE + " = ? AND " + KEY_LONGITUDE + "=?",
+                new String[]{String.valueOf(my_point.getLatitude()), String.valueOf(my_point.getLongitude())});
         db.close();
     }
 
 
-    // Getting contacts Count
-    public int getContactsCount() {
-        String countQuery = "SELECT  * FROM " + TABLE_BLACKSPOTS;
-        SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(countQuery, null);
-        cursor.close();
-
-        // return count
-        return cursor.getCount();
-    }
-
+//    // Getting contacts Count
+//    public int getContactsCount() {
+//        String countQuery = "SELECT  * FROM " + TABLE_BLACKSPOTS;
+//        SQLiteDatabase db = this.getReadableDatabase();
+//        Cursor cursor = db.rawQuery(countQuery, null);
+//        cursor.close();
+//
+//        // return count
+//        return cursor.getCount();
+//    }
 }

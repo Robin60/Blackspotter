@@ -42,6 +42,19 @@
         <item>-74.895646</item>
     </string-array>
 
+    <string-array name="danger_zone_causes">
+        <item>Weather</item>
+        <item>Loose Chippings</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+    </string-array>
+
     <!-- names -->
     <string-array name="black_spot_names">
         <item>Westlands museum road</item>
@@ -95,7 +108,6 @@
         <item>Frisco - State Highway 121 and Preston Rd</item>
         <item>Hollywood - S Flamingo Rd and Pines Blvd</item>
         <item>Boston MA</item>
-
     </string-array>
 
     <!-- Latitudes -->
@@ -205,6 +217,60 @@
         <item>-96.805093</item>
         <item>-80.312673</item>
         <item>-71.05888</item>
+    </string-array>
+
+    <string-array name="black_spot_causes">
+        <item>Weather</item>
+        <item>Loose Chippings</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Weather</item>
+        <item>Loose Chippings</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Weather</item>
+        <item>Loose Chippings</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Weather</item>
+        <item>Loose Chippings</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Weather</item>
+        <item>Loose Chippings</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Damaged Bridge</item>
+        <item>Drunk Driving</item>
+        <item>Recklessness</item>
+        <item>Poor Roads</item>
+        <item>Weather</item>
     </string-array>
 
 </resources>
