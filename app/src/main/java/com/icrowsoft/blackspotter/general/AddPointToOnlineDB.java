@@ -69,14 +69,13 @@ public class AddPointToOnlineDB {
                             // set the country
                             new_point.setCountry(result);
 
-                            String encrypted_latitude;
                             try {
                                 // get and encrypt latitude
-                                encrypted_latitude = SimpleCrypto.encrypt("blackspotter", new_point.getLatitude());
+                                String encrypted_latlong = SimpleCrypto.encrypt("blackspotter", new_point.getLatitude()+new_point.getLongitude()+new_point.getLastModified());
 
                                 // get Firebase reference
                                 DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
-                                my_db_ref = online_DB.child("blackspots").child("KE").child(encrypted_latitude);
+                                my_db_ref = online_DB.child("blackspots").child("KE").child(encrypted_latlong);
 
                                 // save new location
                                 my_db_ref.setValue(new_point, new DatabaseReference.CompletionListener() {

@@ -38,7 +38,7 @@ public class MyPointOnMap implements Serializable {
 
     // getting name
     public String getName() {
-        return (TextUtils.isEmpty(this._name)) ? "null" : _name;
+        return (TextUtils.isEmpty(this._name)) ? _description : _name;
     }
 
     // setting name

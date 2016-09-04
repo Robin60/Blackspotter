@@ -65,6 +65,8 @@ public class OnlineDBListener extends Service {
                     my_point.setLastModified(postSnapshot.child("lastModified").getValue().toString());
                     my_point.setCountry(country);
                     my_point.setDescription(postSnapshot.child("description").getValue().toString());
+                    my_point.setCause(postSnapshot.child("cause").getValue().toString());
+                    my_point.setPhoto(postSnapshot.child("photo").getValue().toString());
 
                     // insert new points to DB
                     insert_into_table(my_point);

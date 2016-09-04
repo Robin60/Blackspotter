@@ -9,8 +9,11 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -52,6 +55,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -75,12 +79,14 @@ import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.ProviderException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -94,7 +100,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private FloatingActionButton fab_fullscreen;
     private boolean fab_add_new_clicked;
     private FrameLayout mInterceptorFrame;
-    int REQUEST_CODE = 777;
+    private static final int CAMERA_REQUEST_CODE = 999;
+    private static final int VOICE_REQUEST_CODE = 777;
+    private static final int PLACE_PICKER_REQUEST_CODE = 888;
     private TextView lbl_accuracy;
     private View warning_dot;
     private Polyline current_polyline;
@@ -113,7 +121,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private Marker my_location_marker;
     private TextToSpeech textToSpeech;
     private Handler handler;
-    private HashMap<String,MyPointOnMap> my_markers;
+    private HashMap<String, MyPointOnMap> my_markers;
+    private MyPointOnMap new_point;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -375,67 +384,67 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 //            }
 //        });
 
-//        // get location manager
-//        LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-//
-//        try {
-//            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 600000,
-//                    500, new LocationListener() {// TODO: 8/6/16 change values here to match settings
-//                        @Override
-//                        public void onLocationChanged(Location location) {
-//                            Log.i("Kibet", "My location updated by GPS");
-//
-//                            // remove my location marker
-//                            if (my_location_marker != null) {
-//                                my_location_marker.remove();
-//                            }
-//
-//                            float accuracy = location.getAccuracy();
-//
-//                            // update my location
-//                            my_current_location = location;
-//
-//                            // create marker
-//                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-//
-//                            // Changing marker icon
-//                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-//
-//                            // add a point at the end of my_markers
-//                            int pos = my_markers.size();
-//
-//                            MyPointOnMap me = new MyPointOnMap();
-//                            me.setName("My Location");
-//                            me.setLatitude(""+location.getLatitude());
-//                            me.setLongitude(""+location.getLongitude());
-//
-//                            my_markers.put(""+pos,me);
-//
-//                            // adding marker
-//                            my_location_marker = mMap.addMarker(marker);
-//
-//                            // display lbl_accuracy
-//                            lbl_accuracy.setText("Acc: " + accuracy);
-//                        }
-//
-//                        @Override
-//                        public void onStatusChanged(String s, int i, Bundle bundle) {
-//
-//                        }
-//
-//                        @Override
-//                        public void onProviderEnabled(String s) {
-//
-//                        }
-//
-//                        @Override
-//                        public void onProviderDisabled(String s) {
-//
-//                        }
-//                    });
-//        } catch (ProviderException ex) {
-//            Log.e("Kibet", "Error: GPS not available");
-//        }
+        // get location manager
+        LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        try {
+            mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 600000,
+                    500, new LocationListener() {// TODO: 8/6/16 change values here to match settings
+                        @Override
+                        public void onLocationChanged(Location location) {
+                            Log.i("Kibet", "My location updated by GPS");
+
+                            // remove my location marker
+                            if (my_location_marker != null) {
+                                my_location_marker.remove();
+                            }
+
+                            float accuracy = location.getAccuracy();
+
+                            // update my location
+                            my_current_location = location;
+
+                            // create marker
+                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+
+                            // Changing marker icon
+                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+
+                            // add a point at the end of my_markers
+                            int pos = my_markers.size();
+
+                            MyPointOnMap me = new MyPointOnMap();
+                            me.setName("My Location");
+                            me.setLatitude("" + location.getLatitude());
+                            me.setLongitude("" + location.getLongitude());
+
+                            my_markers.put("" + pos, me);
+
+                            // adding marker
+                            my_location_marker = mMap.addMarker(marker);
+
+                            // display lbl_accuracy
+                            lbl_accuracy.setText("Acc: " + accuracy);
+                        }
+
+                        @Override
+                        public void onStatusChanged(String s, int i, Bundle bundle) {
+
+                        }
+
+                        @Override
+                        public void onProviderEnabled(String s) {
+
+                        }
+
+                        @Override
+                        public void onProviderDisabled(String s) {
+
+                        }
+                    });
+        } catch (ProviderException ex) {
+            Log.e("Kibet", "Error: GPS not available");
+        }
 
 //        try {
 //            mLocationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 500000,
@@ -831,11 +840,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
      */
     private void startVoiceRecognitionActivity() {
         Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
-//        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
         intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
         intent.putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 5);
-        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak('Set accident scene')...");
-        startActivityForResult(intent, REQUEST_CODE);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak e.g.\n\"Set accident scene...\"");
+        startActivityForResult(intent, VOICE_REQUEST_CODE);
     }
 
     private void toggleFullscreen() {
@@ -908,9 +916,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                     startVoiceRecognitionActivity();
                 }
 
-//                // todo delete
-//                MyNotifier.notify_user(getBaseContext(), "Test", "Warning");
-
                 break;
         }
     }
@@ -919,7 +924,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     * Add point to database via click
     */
     private void add_location_to_DB_via_click(String title, String body, final String description, final Location point) {
-        new MaterialDialog.Builder(this)
+        // display confirmation
+        new MaterialDialog.Builder(my_activity)
                 .title(title)
                 .content(body)
                 .positiveText("Proceed")
@@ -934,7 +940,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         dialog.dismiss();
 
                         // create a point from current location
-                        MyPointOnMap new_point = new MyPointOnMap();
+                        new_point = new MyPointOnMap();
 
                         // set fields
                         new_point.setCases(0);
@@ -945,8 +951,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         new_point.setLongitude(String.valueOf(point.getLongitude()));
                         new_point.setDescription(description);
 
-                        // add point to DB
-                        new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+                        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                        startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
                     }
                 }).onNegative(new MaterialDialog.SingleButtonCallback() {
             @Override
@@ -1016,11 +1022,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                     } else {
                         try {
                             Toast.makeText(getBaseContext(), "Pick a destination", Toast.LENGTH_SHORT).show();
-                            int PLACE_PICKER_REQUEST = 888;
                             Intent intent = new PlaceAutocomplete.IntentBuilder(PlaceAutocomplete.MODE_OVERLAY)
 //                                    .setFilter(typeFilter)
                                     .build(this);
-                            startActivityForResult(intent, PLACE_PICKER_REQUEST);
+                            startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
                         } catch (GooglePlayServicesRepairableException e) {
                             // TODO: Handle the error.
                         } catch (GooglePlayServicesNotAvailableException e) {
@@ -1106,6 +1111,44 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                     // Start downloading json data from Google Directions API
                     downloadTask.execute(url);
+
+                    break;
+                case 999:
+                    Bitmap photo = (Bitmap) data.getExtras().get("data");
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    photo.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
+                    byte[] b = baos.toByteArray();
+
+                    new_point.setPhoto(b.toString());
+
+                    Log.i("Kibet", "Lat: " + new_point.getLatitude() + "\nLong: " + new_point.getLongitude());
+
+                    new MaterialDialog.Builder(this)
+                            .title("Description")
+                            .items(new String[]{"Weather", "Loose Chippings", "Damaged Bridge", "Drunk Driving", "Recklessness", "Poor Roads"})
+                            .positiveColor(Color.GREEN)
+                            .positiveText("Proceed")
+                            .itemsCallbackSingleChoice(-1, new MaterialDialog.ListCallbackSingleChoice() {
+                                @Override
+                                public boolean onSelection(MaterialDialog dialog, View view, int which, CharSequence text) {
+                                    // set cause
+                                    new_point.setCause(text.toString());
+
+                                    // add point to DB
+                                    new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+                                    return true;
+                                }
+                            })
+                            .negativeColor(Color.RED)
+                            .negativeText("Cancel")
+                            .onNegative(new MaterialDialog.SingleButtonCallback() {
+                                @Override
+                                public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                    dialog.dismiss();
+                                    new_point = null;
+                                }
+                            })
+                            .show();
 
                     break;
             }
