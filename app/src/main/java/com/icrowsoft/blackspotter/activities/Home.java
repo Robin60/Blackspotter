@@ -55,7 +55,6 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
@@ -65,8 +64,8 @@ import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.maps.android.PolyUtil;
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.SyncDB.sync_DB_offline;
-import com.icrowsoft.blackspotter.SyncDB.sync_DB_online;
 import com.icrowsoft.blackspotter.adapters.MyInfoWindowAdapter;
+import com.icrowsoft.blackspotter.base64.ImageBase64;
 import com.icrowsoft.blackspotter.general.AddMarkersToMap;
 import com.icrowsoft.blackspotter.general.AddPointToOnlineDB;
 import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
@@ -79,7 +78,6 @@ import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -87,6 +85,7 @@ import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.security.ProviderException;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -311,15 +310,17 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         mMap = googleMap;
 
         // syc database offline
-        new sync_DB_offline(getBaseContext()).execute();
+        new sync_DB_offline(getApplicationContext(), handler, my_activity, mMap, fab_add_new).execute();
 
-        // syc database online
-        new sync_DB_online(getApplicationContext(), handler, my_activity, mMap, fab_add_new).execute();
+//        // syc database online
+//        new sync_DB_online(getApplicationContext(), handler, my_activity, mMap, fab_add_new).execute();
 
         // set dummy location
         my_current_location = new Location("dummy_provider");
-        my_current_location.setLatitude(-1.29207);
-        my_current_location.setLongitude(36.82195);
+//        my_current_location.setLatitude(-1.29207);
+//        my_current_location.setLongitude(36.8219);
+        my_current_location.setLatitude(0);
+        my_current_location.setLongitude(0);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast my_toast = Toast.makeText(getBaseContext(), "Location Access denied", Toast.LENGTH_SHORT);
@@ -357,19 +358,19 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
     @SuppressWarnings("MissingPermission")
     private void track_me() {
-//        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
-//            @Override
-//            public void onMyLocationChange(Location location) {
-//                // remove my location marker
-//                if (my_location_marker != null) {
-//                    my_location_marker.remove();
-//                }
-//
-//                float accuracy = location.getAccuracy();
-//
-//                // update my location
-//                my_current_location = location;
-//
+        mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                // remove my location marker
+                if (my_location_marker != null) {
+                    my_location_marker.remove();
+                }
+
+                float accuracy = location.getAccuracy();
+
+                // update my location
+                my_current_location = location;
+
 //                // create marker
 //                MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
 //
@@ -377,12 +378,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 //                marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
 //
 //                // adding marker
-//                my_location_marker = mMap.addMarker(marker);xxxx
-//
-//                // display lbl_accuracy
-//                lbl_accuracy.setText("Acc: " + accuracy);
-//            }
-//        });
+//                my_location_marker = mMap.addMarker(marker);
+
+                // display lbl_accuracy
+                lbl_accuracy.setText("Acc: " + accuracy);
+            }
+        });
 
         // get location manager
         LocationManager mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
@@ -404,24 +405,24 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                             // update my location
                             my_current_location = location;
 
-                            // create marker
-                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-
-                            // Changing marker icon
-                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-
-                            // add a point at the end of my_markers
-                            int pos = my_markers.size();
-
-                            MyPointOnMap me = new MyPointOnMap();
-                            me.setName("My Location");
-                            me.setLatitude("" + location.getLatitude());
-                            me.setLongitude("" + location.getLongitude());
-
-                            my_markers.put("" + pos, me);
-
-                            // adding marker
-                            my_location_marker = mMap.addMarker(marker);
+//                            // create marker
+//                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
+//
+//                            // Changing marker icon
+//                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
+//
+//                            // add a point at the end of my_markers
+//                            int pos = my_markers.size();
+//
+//                            MyPointOnMap me = new MyPointOnMap();
+//                            me.setName("My Location");
+//                            me.setLatitude("" + location.getLatitude());
+//                            me.setLongitude("" + location.getLongitude());
+//
+//                            my_markers.put("" + pos, me);
+//
+//                            // adding marker
+//                            my_location_marker = mMap.addMarker(marker);
 
                             // display lbl_accuracy
                             lbl_accuracy.setText("Acc: " + accuracy);
@@ -647,6 +648,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // Parsing the data in non-ui thread
         @Override
         protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            Log.i("Kibet", jsonData.toString());
 
             JSONObject jObject;
             List<List<HashMap<String, String>>> routes = null;
@@ -876,13 +879,64 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         return super.onCreateOptionsMenu(menu);
     }
 
+    private boolean isWithinSpot(String description, Location my_loc) {
+        // get database reference
+        BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
+
+        // fetch all points
+        List<MyPointOnMap> all_map_points = my_db.getAllPoints();
+
+        for (final MyPointOnMap point_from_DB : all_map_points) {
+            // LatLng of my location
+            LatLng myLocation = new LatLng(my_loc.getLatitude(), my_loc.getLongitude());
+
+            // LatLng of reference point
+            LatLng pointOnMap = new LatLng(Double.parseDouble(point_from_DB.getLatitude()), Double.parseDouble(point_from_DB.getLongitude()));
+
+            // calculate distance
+            float distance_in_metres = CalculationByDistance(myLocation, pointOnMap);
+
+            // check if within proximity
+            if (distance_in_metres < 100) {
+                Snackbar.make(fab_add_new, "Already within a " + description, Snackbar.LENGTH_SHORT).show();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public int CalculationByDistance(LatLng StartP, LatLng EndP) {
+        int Radius = 6371;// radius of earth in Km
+        double lat1 = StartP.latitude;
+        double lat2 = EndP.latitude;
+        double lon1 = StartP.longitude;
+        double lon2 = EndP.longitude;
+        double dLat = Math.toRadians(lat2 - lat1);
+        double dLon = Math.toRadians(lon2 - lon1);
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+                + Math.cos(Math.toRadians(lat1))
+                * Math.cos(Math.toRadians(lat2)) * Math.sin(dLon / 2)
+                * Math.sin(dLon / 2);
+        double c = 2 * Math.asin(Math.sqrt(a));
+        double valueResult = Radius * c;
+        double km = valueResult / 1;
+        DecimalFormat newFormat = new DecimalFormat("####");
+        int kmInDec = Integer.valueOf(newFormat.format(km));
+        double meter = valueResult % 1000;
+        int meterInDec = Integer.valueOf(newFormat.format(meter));
+
+        return meterInDec;
+    }
+
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab_black_spot:
-                // handle add this location to map
-                add_location_to_DB_via_click("Add Black Spot", "Add this location as an accident black spot?", "Black spot", my_current_location);
-
+                if (!isWithinSpot("Black spot", my_current_location)) {
+                    // handle add this location to map
+                    add_location_to_DB_via_click("Add Black Spot", "Add this location as an accident black spot?", "Black spot", my_current_location);
+                }
                 // hide fabs
                 animateFAB();
                 break;
@@ -894,8 +948,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 animateFAB();
                 break;
             case R.id.fab_danger_zone:
-                // handle add this location to map
-                add_location_to_DB_via_click("Add A Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
+                if (!isWithinSpot("Danger Zone", my_current_location)) {
+                    // handle add this location to map
+                    add_location_to_DB_via_click("Add A Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
+                }
 
                 // hide fabs
                 animateFAB();
@@ -950,6 +1006,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         new_point.setLatitude(String.valueOf(point.getLatitude()));
                         new_point.setLongitude(String.valueOf(point.getLongitude()));
                         new_point.setDescription(description);
+                        new_point.setFirebaseKey("null");
 
                         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                         startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
@@ -978,6 +1035,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         new_point.setLatitude(String.valueOf(point.getLatitude()));
         new_point.setLongitude(String.valueOf(point.getLongitude()));
         new_point.setDescription(description);
+        new_point.setFirebaseKey("");
 
         // add point to DB
         new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
@@ -1114,14 +1172,15 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                     break;
                 case 999:
+
                     Bitmap photo = (Bitmap) data.getExtras().get("data");
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    photo.compress(Bitmap.CompressFormat.JPEG, 100, baos); //bm is the bitmap object
-                    byte[] b = baos.toByteArray();
 
-                    new_point.setPhoto(b.toString());
+                    String encodedRes = ImageBase64
+                            .with(getApplicationContext())
+                            .requestSize(512, 512)
+                            .encodeFile(photo);
 
-                    Log.i("Kibet", "Lat: " + new_point.getLatitude() + "\nLong: " + new_point.getLongitude());
+                    new_point.setPhoto(encodedRes);
 
                     new MaterialDialog.Builder(this)
                             .title("Description")

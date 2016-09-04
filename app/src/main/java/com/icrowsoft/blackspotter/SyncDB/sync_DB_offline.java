@@ -1,8 +1,12 @@
 package com.icrowsoft.blackspotter.SyncDB;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.view.View;
 
+import com.google.android.gms.maps.GoogleMap;
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
@@ -12,10 +16,18 @@ import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
  */
 public class sync_DB_offline extends AsyncTask<String, String, String> {
     private final Context _context;
+    private final Activity _activity;
+    private final GoogleMap _map;
+    private final Handler _handler;
+    private final View _fab;
     private BlackspotDBHandler my_db;
 
-    public sync_DB_offline(Context context) {
+    public sync_DB_offline(Context context, Handler handler, Activity activity, GoogleMap map, View view) {
         this._context = context;
+        this._activity = activity;
+        this._map = map;
+        this._fab = view;
+        this._handler = handler;
     }
 
     @Override
@@ -26,6 +38,14 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
         // sync xml resources into DB
         sync_database_offline();
         return null;
+    }
+
+    @Override
+    protected void onPostExecute(String s) {
+        super.onPostExecute(s);
+
+        // syc database online
+        new sync_DB_online(_context, _handler, _activity, _map, _fab).execute();
     }
 
     public void sync_database_offline() {

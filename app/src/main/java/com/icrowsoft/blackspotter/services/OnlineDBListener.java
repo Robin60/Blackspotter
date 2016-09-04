@@ -37,10 +37,45 @@ public class OnlineDBListener extends Service {
         // create child event listener
         create_childEventListener();
 
+        create_kenyan_listener();
+
         // set child event listener
         my_db_ref.addChildEventListener(childEventListener);
 
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void create_kenyan_listener() {
+        final DatabaseReference my_online_DB = FirebaseDatabase.getInstance().getReference();
+
+        DatabaseReference ref = my_online_DB.child("blackspots");
+        ref.child("KE").addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+                Log.i("Kibet", "Removed Child: " + dataSnapshot.getKey());
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
 
     private void create_childEventListener() {
@@ -67,9 +102,10 @@ public class OnlineDBListener extends Service {
                     my_point.setDescription(postSnapshot.child("description").getValue().toString());
                     my_point.setCause(postSnapshot.child("cause").getValue().toString());
                     my_point.setPhoto(postSnapshot.child("photo").getValue().toString());
+                    my_point.setFirebaseKey(postSnapshot.child("firebase_key").getValue().toString());
 
                     // insert new points to DB
-                    insert_into_table(my_point);
+                    new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(my_point);
                 }
 
                 // send broadcast
@@ -81,6 +117,12 @@ public class OnlineDBListener extends Service {
                 Log.i("Kibet", "Changed: " + s + " --Snapshot: " + dataSnapshot);
                 // get country
                 String country = dataSnapshot.getKey();
+
+                // get database reference
+                BlackspotDBHandler my_offline_db = new BlackspotDBHandler(getBaseContext());
+
+                // truncate DB
+                my_offline_db.truncateBlackspotsTable();
 
                 // loop through json
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
@@ -94,9 +136,11 @@ public class OnlineDBListener extends Service {
                     my_point.setLastModified(postSnapshot.child("lastModified").getValue().toString());
                     my_point.setCountry(country);
                     my_point.setDescription(postSnapshot.child("description").getValue().toString());
+                    my_point.setCause(postSnapshot.child("cause").getValue().toString());
+                    my_point.setPhoto(postSnapshot.child("photo").getValue().toString());
 
                     // insert new points to DB
-                    insert_into_table(my_point);
+                    my_offline_db.addMyPoinOnMap(my_point);
                 }
 
                 // send broadcast
@@ -105,15 +149,15 @@ public class OnlineDBListener extends Service {
 
             @Override
             public void onChildRemoved(DataSnapshot dataSnapshot) {
-                Log.i("Kibet", "Removed: " + dataSnapshot);
-                // loop through json
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-                    String latitude = postSnapshot.child("latitude").getValue().toString();
-                    String longitude = postSnapshot.child("longitude").getValue().toString();
-
-                    Log.i("Kibet", "Removed latitude: " + latitude);
-                    Log.i("Kibet", "Removed longitude: " + longitude);
-                }
+//                Log.i("Kibet", "Removed Key: " + dataSnapshot.getKey());
+//                // loop through json
+//                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+//                    String latitude = postSnapshot.child("latitude").getValue().toString();
+//                    String longitude = postSnapshot.child("longitude").getValue().toString();
+//
+//                    Log.i("Kibet", "Removed latitude: " + latitude);
+//                    Log.i("Kibet", "Removed longitude: " + longitude);
+//                }
             }
 
             @Override
@@ -124,14 +168,6 @@ public class OnlineDBListener extends Service {
             @Override
             public void onCancelled(DatabaseError databaseError) {
                 Log.i("Kibet", "Cancelled: Request was cancelled");
-            }
-
-            public void insert_into_table(MyPointOnMap my_point) {
-                // get database reference
-                BlackspotDBHandler my_offline_db = new BlackspotDBHandler(getBaseContext());
-
-                // new insert
-                my_offline_db.addMyPoinOnMap(my_point);
             }
         };
     }

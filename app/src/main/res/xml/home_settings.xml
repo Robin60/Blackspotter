@@ -46,7 +46,7 @@
             android:id="@+id/distance_to_notify"
             android:defaultValue="500"
             android:key="distance_to_notify"
-            android:summary="Distance within which to notify(Metres)"
+            android:summary="Distance within which to notify"
             android:title="Notify distance" />
         <EditTextPreference
             android:id="@+id/point_expiry_time"

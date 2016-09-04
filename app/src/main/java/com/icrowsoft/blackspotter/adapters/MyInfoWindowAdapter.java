@@ -38,7 +38,7 @@ public class MyInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
         ImageView image = ((ImageView) myContentsView.findViewById(R.id.img));
 
         MyPointOnMap aa = _my_markers.get(marker.getTitle());
-        Toast.makeText(_activity, "--" + aa.getPhoto(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(_activity.getBaseContext(), "" + marker.getTitle(), Toast.LENGTH_SHORT).show();
 
         lbl_name.setText(aa.getName());
         lbl_cause.setText(aa.getCause());
@@ -65,8 +65,6 @@ public class MyInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
             Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
             image.setImageBitmap(decodedByte);
         }
-
-
         return myContentsView;
     }
 

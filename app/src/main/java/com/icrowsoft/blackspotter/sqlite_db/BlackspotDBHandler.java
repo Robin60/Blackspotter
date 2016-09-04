@@ -36,6 +36,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     private static final String KEY_DESCRIPTION = "description";
     private static final String KEY_PHOTO = "photo";
     private static final String KEY_CAUSE = "cause";
+    private static final String KEY_FIREBASE_KEY = "firebase_key";
 
     public BlackspotDBHandler(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -53,6 +54,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                 KEY_DESCRIPTION + " text," +
                 KEY_PHOTO + " text," +
                 KEY_CAUSE + " text," +
+                KEY_FIREBASE_KEY + " text," +
                 KEY_COUNTRY + " text)";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -73,7 +75,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     // Adding new blackspot
     public void addMyPoinOnMap(MyPointOnMap my_point) {
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        // check if duplicate
+        boolean found = doesPointExist(my_point.getLatitude(), my_point.getLongitude());
 
         ContentValues values = new ContentValues();
         values.put(KEY_NAME, my_point.getName()); // Contact Name
@@ -85,26 +88,35 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         values.put(KEY_PHOTO, my_point.getPhoto());
         values.put(KEY_CAUSE, my_point.getCause());
         values.put(KEY_COUNTRY, my_point.getCountry());
+        values.put(KEY_FIREBASE_KEY, my_point.getFirebaseKey());
 
-        // check if duplicate
-        boolean found = getPoint(my_point.getLatitude(), my_point.getLongitude());
+        SQLiteDatabase db = this.getWritableDatabase();
 
         // proceed if not found
         if (!found) {
             // Inserting point
             db.insert(TABLE_BLACKSPOTS, null, values);
         } else {
-            db.update(TABLE_BLACKSPOTS, values, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?", new String[]{my_point.getLatitude(), my_point.getLongitude()});
+            db.update(TABLE_BLACKSPOTS, values, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?",
+                    new String[]{my_point.getLatitude(), my_point.getLongitude()});
         }
-//        // Closing database connection
-//        db.close();
+        // Closing database connection
+        db.close();
     }
 
     // Getting single point
-    public boolean getPoint(String lat, String lon) {
+    public void truncateBlackspotsTable() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.execSQL("DELETE FROM " + TABLE_BLACKSPOTS);
+        db.close();
+    }
+
+    // Getting single point
+    public boolean doesPointExist(String lat, String lon) {
         SQLiteDatabase db = this.getReadableDatabase();
 
-        Cursor cursor = db.query(TABLE_BLACKSPOTS, new String[]{KEY_LATITUDE, KEY_LONGITUDE}, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?",
+        Cursor cursor = db.query(TABLE_BLACKSPOTS,
+                new String[]{KEY_LATITUDE, KEY_LONGITUDE}, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?",
                 new String[]{lat, lon}, null, null, null, null);
 
         boolean found;
@@ -129,7 +141,8 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         // Select All Query
         String selectQuery = "SELECT * FROM " + TABLE_BLACKSPOTS;
 
-        SQLiteDatabase db = this.getWritableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
+
         Cursor cursor = db.rawQuery(selectQuery, null);
 
 //        Log.i("Kibet", "COUNT >> " + cursor.getCount());// TODO: 7/29/16 remove this
@@ -147,6 +160,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                 my_point.setCountry(cursor.getString(cursor.getColumnIndex(KEY_COUNTRY)));
                 my_point.setPhoto(cursor.getString(cursor.getColumnIndex(KEY_PHOTO)));
                 my_point.setCause(cursor.getString(cursor.getColumnIndex(KEY_CAUSE)));
+                my_point.setFirebaseKey(cursor.getString(cursor.getColumnIndex(KEY_FIREBASE_KEY)));
 
                 // Adding contact to list
                 myPointsList.add(my_point);
@@ -171,6 +185,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         values.put(KEY_COUNTRY, my_point.getCountry());
         values.put(KEY_PHOTO, my_point.getPhoto());
         values.put(KEY_CAUSE, my_point.getCause());
+        values.put(KEY_FIREBASE_KEY, my_point.getFirebaseKey());
 
         // updating row
         return db.update(TABLE_BLACKSPOTS, values, KEY_LATITUDE + " = ?",
