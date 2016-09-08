@@ -946,6 +946,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 animateFAB();
                 break;
             case R.id.fab_danger_zone:
+
                 if (!isWithinSpot("Danger Zone", my_current_location)) {
                     // handle add this location to map
                     add_location_to_DB_via_click("Add A Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
@@ -969,7 +970,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                     // start voice recognition activity
                     startVoiceRecognitionActivity();
                 }
-
                 break;
         }
     }

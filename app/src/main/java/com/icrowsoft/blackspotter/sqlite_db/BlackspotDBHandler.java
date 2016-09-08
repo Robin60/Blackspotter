@@ -230,5 +230,4 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
         // delete online
         my_db_ref.removeValue();
     }
-
 }

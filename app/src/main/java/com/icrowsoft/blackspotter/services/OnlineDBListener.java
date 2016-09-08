@@ -74,8 +74,8 @@ public class OnlineDBListener extends Service {
                 // get database reference
                 BlackspotDBHandler my_offline_db = new BlackspotDBHandler(getBaseContext());
 
-//                // truncate DB
-//                my_offline_db.truncateBlackspotsTable();
+                // truncate DB
+                my_offline_db.truncateBlackspotsTable();
 
                 // loop through json
                 for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {

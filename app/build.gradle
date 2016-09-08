@@ -33,6 +33,7 @@ dependencies {
     compile 'com.google.maps.android:android-maps-utils:0.4.3'
     compile 'com.afollestad.material-dialogs:core:0.8.6.2'
     compile project(':mpandroidchartlibrary-2-2-4')
+    compile 'com.github.halysongoncalves:pugnotification:1.8.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

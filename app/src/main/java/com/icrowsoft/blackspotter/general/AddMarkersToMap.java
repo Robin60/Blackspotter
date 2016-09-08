@@ -74,26 +74,23 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
                 point_on_map.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE));
             }
 
-            // add markers on main thread
-            _activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    //add marker
-                    Marker marker = _map.addMarker(point_on_map);
+            // check if 0 0
+            if (!my_point.getLatitude().equals("0.0") && !my_point.getLongitude().equals("0.0")) {
+                // add markers on main thread
+                _activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //add marker
+                        Marker marker = _map.addMarker(point_on_map);
 
-                    // add to my markers
-                    my_markers.put(marker.getTitle(), my_point);
-//
-//                    MyPointOnMap aa = my_markers.get(marker.getTitle());
-//
-//
+                        // add to my markers
+                        my_markers.put(marker.getTitle(), my_point);
 
-                    // set clicks on info windows
-                    _map.setInfoWindowAdapter(new MyInfoWindowAdapter(_activity, my_markers));
-
-//                    _activity.sendBroadcast(new Intent("RECEIVE_HASH_MAP").putExtra("my_markers",my_markers));
-                }
-            });
+                        // set clicks on info windows
+                        _map.setInfoWindowAdapter(new MyInfoWindowAdapter(_activity, my_markers));
+                    }
+                });
+            }
         }
         return null;
     }
