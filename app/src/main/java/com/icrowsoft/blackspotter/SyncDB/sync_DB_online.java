@@ -56,6 +56,7 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
 
                     // fetch all points
                     List<MyPointOnMap> all_map_points = my_db.getAllPoints();
+                    Log.i("Kibet", "All points: " + all_map_points.size());
 
                     for (final MyPointOnMap my_point : all_map_points) {
                         // fetch country and save online
@@ -71,25 +72,6 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
 
             }
         });
-
         return null;
     }
-
-//    public static String getCountryName(Context context, double latitude, double longitude) {
-//        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-//        List<Address> addresses = null;
-//        try {
-//            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-//            Address result;
-//
-//            Log.i("Kibet", "Addresses: " + addresses);
-//
-//            if (addresses != null && !addresses.isEmpty()) {
-//                return addresses.get(0).getCountryName();
-//            }
-//        } catch (IOException ignored) {
-//            //do something
-//        }
-//        return null;
-//    }
 }

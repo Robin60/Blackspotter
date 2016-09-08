@@ -18,21 +18,19 @@ import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 public class complete_day_simulator extends AsyncTask<String, String, String> {
     private final Context _context;
     private final Handler _handler;
+    private final MyPointOnMap _new_point;
+    private DatabaseReference online_DB;
 
-    public complete_day_simulator(Context context, Handler handler) {
+    public complete_day_simulator(Context context, Handler handler, MyPointOnMap new_point) {
         this._context = context;
         this._handler = handler;
+        this._new_point = new_point;
     }
 
     @Override
     protected String doInBackground(String... strings) {
         // get online DB
-        final DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
-
-        // get database reference
-        final String key = strings[0];
-        final String latitude = strings[1];
-        final String longitude = strings[2];
+        online_DB = FirebaseDatabase.getInstance().getReference();
 
         // preference manager
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(_context);
@@ -45,7 +43,7 @@ public class complete_day_simulator extends AsyncTask<String, String, String> {
             @Override
             public void run() {
                 // delete data
-                online_DB.child("blackspots").child("KE").child(key).removeValue();
+                online_DB.child("blackspots").child("KE").child(_new_point.getFirebaseKey()).removeValue();
 
                 // remove callbacks
                 _handler.removeCallbacks(this);
@@ -53,13 +51,8 @@ public class complete_day_simulator extends AsyncTask<String, String, String> {
                 // send broadcast
                 _context.sendBroadcast(new Intent("REFRESH_MARKERS"));
 
-                // create simple point
-                MyPointOnMap point_to_delete = new MyPointOnMap();
-                point_to_delete.setLatitude(latitude);
-                point_to_delete.setLongitude(longitude);
-
                 // delete from local database
-                new BlackspotDBHandler(_context).deletePoint(point_to_delete);
+                new BlackspotDBHandler(_context).deletePoint(_new_point.getFirebaseKey());
             }
         }, (Integer.parseInt(scene_expiry_time) * 1000));
 

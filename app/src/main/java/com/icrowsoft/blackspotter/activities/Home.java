@@ -149,6 +149,12 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // create handler
         handler = new Handler();
 
+        BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
+
+        // fetch all points from DB
+        all_points = my_db.getAllPoints();
+
+
         // get view to use on the toolbar
         warning_dot = getLayoutInflater().inflate(R.layout.toolbar_home, null);
         toolbar.addView(warning_dot);
@@ -197,11 +203,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 return false;
             }
         });
-
-        BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
-
-        // fetch all points from DB
-        all_points = my_db.getAllPoints();
 
 
         // force actionbar overflow
@@ -312,13 +313,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // syc database offline
         new sync_DB_offline(getApplicationContext(), handler, my_activity, mMap, fab_add_new).execute();
 
-//        // syc database online
-//        new sync_DB_online(getApplicationContext(), handler, my_activity, mMap, fab_add_new).execute();
-
         // set dummy location
         my_current_location = new Location("dummy_provider");
-//        my_current_location.setLatitude(-1.29207);
-//        my_current_location.setLongitude(36.8219);
+        my_current_location.setLatitude(-1.29207);
+        my_current_location.setLongitude(36.8219);
         my_current_location.setLatitude(0);
         my_current_location.setLongitude(0);
 
@@ -897,8 +895,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             float distance_in_metres = CalculationByDistance(myLocation, pointOnMap);
 
             // check if within proximity
-            if (distance_in_metres < 100) {
-                Snackbar.make(fab_add_new, "Already within a " + description, Snackbar.LENGTH_SHORT).show();
+            if (distance_in_metres < 150) {
+                Snackbar.make(fab_add_new, "Already within a " + description + ": " + point_from_DB.getName(), Snackbar.LENGTH_SHORT).show();
                 return true;
             }
         }
@@ -1187,7 +1185,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                             .items(new String[]{"Weather", "Loose Chippings", "Damaged Bridge", "Drunk Driving", "Recklessness", "Poor Roads"})
                             .positiveColor(Color.GREEN)
                             .positiveText("Proceed")
-                            .itemsCallbackSingleChoice(-1, new MaterialDialog.ListCallbackSingleChoice() {
+                            .itemsCallbackSingleChoice(0, new MaterialDialog.ListCallbackSingleChoice() {
                                 @Override
                                 public boolean onSelection(MaterialDialog dialog, View view, int which, CharSequence text) {
                                     // set cause
