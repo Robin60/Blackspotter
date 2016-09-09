@@ -895,7 +895,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
             float distance_in_metres = CalculationByDistance(myLocation, pointOnMap);
 
             // check if within proximity
-            if (distance_in_metres < 150) {
+            if (distance_in_metres < 2) {
                 Snackbar.make(fab_add_new, "Already within a " + description + ": " + point_from_DB.getName(), Snackbar.LENGTH_SHORT).show();
                 return true;
             }
@@ -931,25 +931,44 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab_black_spot:
-                if (!isWithinSpot("Black spot", my_current_location)) {
-                    // handle add this location to map
-                    add_location_to_DB_via_click("Add Black Spot", "Add this location as an accident black spot?", "Black spot", my_current_location);
+                boolean found = new BlackspotDBHandler(getBaseContext()).doesPointExist("" + my_current_location.getLatitude(), "" + my_current_location.getLongitude());
+
+                // check for duplicates
+                if (!found) {
+                    if (!isWithinSpot("Black spot", my_current_location)) {
+                        // handle add this location to map
+                        add_location_to_DB_via_click("Add Black Spot", "Add this location as an accident black spot?", "Black spot", my_current_location);
+                    }
+                } else {
+                    Snackbar.make(fab_add_new, "Duplicate. Vary position a bit", Snackbar.LENGTH_SHORT).show();
                 }
                 // hide fabs
                 animateFAB();
                 break;
             case R.id.fab_accident_scene:
-                // handle add this location to map
-                add_location_to_DB_via_click("Add Accident Scene", "Add this location as an accident scene?", "Accident scene", my_current_location);
+                found = new BlackspotDBHandler(getBaseContext()).doesPointExist("" + my_current_location.getLatitude(), "" + my_current_location.getLongitude());
 
+                // check for duplicates
+                if (!found) {
+                    // handle add this location to map
+                    add_location_to_DB_via_click("Add Accident Scene", "Add this location as an accident scene?", "Accident scene", my_current_location);
+                } else {
+                    Snackbar.make(fab_add_new, "Duplicate. Vary position a bit", Snackbar.LENGTH_SHORT).show();
+                }
                 // hide fabs
                 animateFAB();
                 break;
             case R.id.fab_danger_zone:
+                found = new BlackspotDBHandler(getBaseContext()).doesPointExist("" + my_current_location.getLatitude(), "" + my_current_location.getLongitude());
 
-                if (!isWithinSpot("Danger Zone", my_current_location)) {
-                    // handle add this location to map
-                    add_location_to_DB_via_click("Add A Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
+                // check for duplicates
+                if (!found) {
+                    if (!isWithinSpot("Danger Zone", my_current_location)) {
+                        // handle add this location to map
+                        Snackbar.make(fab_add_new, "Duplicate. Vary position a bit", Snackbar.LENGTH_SHORT).show();
+                    }
+                } else {
+                    Snackbar.make(fab_add_new, "Duplicate", Snackbar.LENGTH_SHORT).show();
                 }
 
                 // hide fabs

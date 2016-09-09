@@ -98,45 +98,19 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
 
             SQLiteDatabase db = this.getWritableDatabase();
 
-//        if (by_pass_check) {
-            // Inserting point
-            db.insert(TABLE_BLACKSPOTS, null, values);
-//        } else {
+            if (by_pass_check) {
+                // Inserting point
+                db.insert(TABLE_BLACKSPOTS, null, values);
+            } else {
 
-//            // proceed if not found
-//            if (!found) {
-//                List<MyPointOnMap> all_map_points = getAllPoints();
-//                LatLng ref_latlong = new LatLng(Double.parseDouble(my_point.getLatitude()), Double.parseDouble(my_point.getLongitude()));
-//                boolean save = false;
-//                for (final MyPointOnMap point_from_DB : all_map_points) {
-//                    // LatLng of reference point
-//                    LatLng pointOnMap = new LatLng(Double.parseDouble(point_from_DB.getLatitude()), Double.parseDouble(point_from_DB.getLongitude()));
-//                    // calculate distance
-//                    float distance_in_metres = CalculationByDistance(ref_latlong, pointOnMap);
-//
-//                    Log.i("Kibet", "Distance: " + distance_in_metres);
-//
-//                    // check if within proximity
-//                    if (distance_in_metres < 200) {
-//                        save = false;
-//                        break;
-//                    } else {
-//                        save = true;
-//                    }
-//                }
-
-//                if (!found) {
-            // Inserting point
-//                    db.insert(TABLE_BLACKSPOTS, null, values);
-
-//                    // check if accident has occured here many times
-//                    checkAI(my_point);
-//                }
-//            } else {
-//                db.update(TABLE_BLACKSPOTS, values, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?",
-//                        new String[]{my_point.getLatitude(), my_point.getLongitude()});
-//            }
-//        }
+                if (!found) {
+                    //Inserting point
+                    db.insert(TABLE_BLACKSPOTS, null, values);
+                } else {
+                    db.update(TABLE_BLACKSPOTS, values, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?",
+                            new String[]{my_point.getLatitude(), my_point.getLongitude()});
+                }
+            }
             // Closing database connection
             db.close();
         } catch (SQLiteDatabaseLockedException e) {
@@ -217,15 +191,20 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     }
 
     // Deleting single contact
-    public void deletePoint(String firebase_key) {
+    public void deletePoint(MyPointOnMap point_to_delete) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(TABLE_BLACKSPOTS, KEY_FIREBASE_KEY + " = ?",
-                new String[]{String.valueOf(firebase_key)});
+        db.delete(TABLE_BLACKSPOTS, KEY_LATITUDE + "=? AND " + KEY_LONGITUDE + "=?",
+                new String[]{
+                        point_to_delete.getLatitude(),
+                        point_to_delete.getLongitude()
+                });
         db.close();
+
+        Log.i("Kibet", "Deleting: " + point_to_delete.getName());
 
         // Get database reference
         DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
-        DatabaseReference my_db_ref = online_DB.child("blackspots").child("KE").child(firebase_key);
+        DatabaseReference my_db_ref = online_DB.child("blackspots").child("KE").child(point_to_delete.getFirebaseKey());
 
         // delete online
         my_db_ref.removeValue();

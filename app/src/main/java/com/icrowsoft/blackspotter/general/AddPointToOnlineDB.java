@@ -19,6 +19,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.icrowsoft.blackspotter.SyncDB.complete_day_simulator;
 import com.icrowsoft.blackspotter.encryption.SimpleCrypto;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
+import com.icrowsoft.blackspotter.online_handlers.AddPointToPHP;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
 import java.text.DecimalFormat;
@@ -58,74 +59,77 @@ public class AddPointToOnlineDB {
                 // check if internet is connected
                 if (CheckConnection.is_internet_connected(_context)) {
                     // try fetching country from latlng
-                    String result = OnlineChecker.Go_Online(url);
+//                    String result = OnlineChecker.Go_Online(url);
 
-                    if (result == null || result.startsWith("timeout")) {
-                        Log.e("Kibet", "Error: Result is null|timeout");
-                    } else {
-                        if (result.startsWith("Unable to resolve host") || result.startsWith("failed to connect to")) {
-                            notify_internet_error();
-                        } else {
-                            // handle no country
-                            // TODO: 9/4/16
+//                    if (result == null || result.startsWith("timeout")) {
+//                        Log.e("Kibet", "Error: Result is null|timeout");
+//                    } else {
+//                        if (result.startsWith("Unable to resolve host") || result.startsWith("failed to connect to")) {
+//                            notify_internet_error();
+//                        } else {
+                    // handle no country
+                    // TODO: 9/4/16
 
-                            // set time to server time(last_modified)
-                            new_point.setLastModified("" + System.currentTimeMillis());
+                    // set time to server time(last_modified)
+                    new_point.setLastModified("" + System.currentTimeMillis());
 
-                            // set the country
-                            new_point.setCountry(result);
+                    // set the country
+                    new_point.setCountry("KE");
 
-                            try {
-                                // get and encrypt latitude
-                                String encrypted_latlong = SimpleCrypto.encrypt("blackspotter", new_point.getLatitude() + new_point.getLongitude() + new_point.getLastModified());
+                    try {
+                        // get and encrypt latitude
+                        String encrypted_latlong = SimpleCrypto.encrypt("blackspotter", new_point.getLatitude() + new_point.getLongitude() + new_point.getLastModified());
 
-                                // get Firebase reference
-                                DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
-                                my_db_ref = online_DB.child("blackspots").child(new_point.getCountry()).child(encrypted_latlong);
+                        // get Firebase reference
+                        DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
+                        my_db_ref = online_DB.child("blackspots").child(new_point.getCountry()).child(encrypted_latlong);
 
-                                // save new location
-                                my_db_ref.setValue(new_point, new DatabaseReference.CompletionListener() {
-                                    @Override
-                                    public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                        // save new location
+                        my_db_ref.setValue(new_point, new DatabaseReference.CompletionListener() {
+                            @Override
+                            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
 
-                                        if (databaseError == null) {
-                                            // set firebase key
-                                            new_point.setFirebaseKey(databaseReference.getKey());
+                                if (databaseError == null) {
+                                    // set firebase key
+                                    new_point.setFirebaseKey(databaseReference.getKey());
 
-                                            // save point to local DB
-                                            new BlackspotDBHandler(_context).addMyPoinOnMap(new_point, false);
+                                    // save point to local DB
+                                    new BlackspotDBHandler(_context).addMyPoinOnMap(new_point, false);
 
-                                            // check if its an accident scene
-                                            if (new_point.getDescription().equals("Accident scene")) {
-                                                // trigger delete after 24hrs
-                                                new complete_day_simulator(_context, _handler, new_point).execute();
-                                            }
+                                    // add to PHP
+                                    new AddPointToPHP().addPoint(_context, new_point);
 
-                                            try {
-                                                Thread.sleep(2000);
-                                            } catch (InterruptedException e) {
-                                                Log.e("Kibet", "Sleep interrupted: " + e.getMessage());
-                                            }
-
-                                            // check for close points
-                                            triggerAI(new_point);
-
-                                            // show success
-                                            myToaster("Added Successfully");
-
-                                            // re-add markers
-                                            new AddMarkersToMap(_context, _activity, _map).execute();
-                                        } else {
-                                            // show error
-                                            myToaster("Error adding location");
-                                        }
+                                    // check if its an accident scene
+                                    if (new_point.getDescription().equals("Accident scene")) {
+                                        // trigger delete after 24hrs
+                                        new complete_day_simulator(_context, _handler, new_point).execute();
                                     }
-                                });
-                            } catch (Exception e) {
-                                Log.e("Kibet", "Error encrypting: " + e.getMessage());
+
+                                    // show success
+                                    myToaster("Added Successfully");
+
+                                    // re-add markers
+                                    new AddMarkersToMap(_context, _activity, _map).execute();
+
+                                    try {
+                                        Thread.sleep(3000);
+                                    } catch (InterruptedException e) {
+                                        Log.e("Kibet", "Sleep interrupted: " + e.getMessage());
+                                    }
+
+                                    // check for close points
+                                    triggerAI(new_point);
+                                } else {
+                                    // show error
+                                    myToaster("Error adding location");
+                                }
                             }
-                        }
+                        });
+                    } catch (Exception e) {
+                        Log.e("Kibet", "Error encrypting: " + e.getMessage());
                     }
+//                        }
+//                    }
                 } else {
                     notify_internet_error();
                 }
@@ -136,7 +140,7 @@ public class AddPointToOnlineDB {
                 // fetch all points
                 List<MyPointOnMap> all_map_points = new BlackspotDBHandler(_context).getAllPoints();
 
-                ArrayList<String> references_to_delete = new ArrayList<>();
+                List<MyPointOnMap> references_to_delete = new ArrayList<>();
 
                 // LatLng of location to check against
                 LatLng ref_latlong = new LatLng(Double.parseDouble(check_point.getLatitude()), Double.parseDouble(check_point.getLongitude()));
@@ -158,8 +162,9 @@ public class AddPointToOnlineDB {
                     // check if within proximity
                     if (distance_in_metres < 2 && point_from_DB.getLongitude() != check_point.getLongitude() && point_from_DB.getLatitude() != check_point.getLatitude()) {
                         Log.i("Kibet", "To be deleted " + point_from_DB.getName());
+
                         // delete
-                        references_to_delete.add(point_from_DB.getFirebaseKey());
+                        references_to_delete.add(point_from_DB);
 
                         // mirror its details
                         new_photo = point_from_DB.getPhoto();
@@ -177,6 +182,7 @@ public class AddPointToOnlineDB {
                     // delete these locations
                     for (int i = 0; i < references_to_delete.size(); i++) {
                         new BlackspotDBHandler(_context).deletePoint(references_to_delete.get(i));
+                        Log.e("Kibet", "Requesting delete: " + references_to_delete.get(i));
                     }
                     // add a new blackspot
                     // create a point from current location
@@ -198,7 +204,6 @@ public class AddPointToOnlineDB {
 
                     // add point to DB
                     add_this_point_AI(new_point);
-//            new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
                 }
             }
 
@@ -245,7 +250,7 @@ public class AddPointToOnlineDB {
 
                             // get Firebase reference
                             DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
-                            DatabaseReference my_db_ref = online_DB.child("blackspots").child("KE").child(encrypted_latlong);
+                            DatabaseReference my_db_ref = online_DB.child("blackspots").child(new_point.getCountry()).child(encrypted_latlong);
 
                             // save new location
                             my_db_ref.setValue(new_point, new DatabaseReference.CompletionListener() {

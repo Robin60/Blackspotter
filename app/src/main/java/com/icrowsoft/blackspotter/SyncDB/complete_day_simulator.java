@@ -52,7 +52,7 @@ public class complete_day_simulator extends AsyncTask<String, String, String> {
                 _context.sendBroadcast(new Intent("REFRESH_MARKERS"));
 
                 // delete from local database
-                new BlackspotDBHandler(_context).deletePoint(_new_point.getFirebaseKey());
+                new BlackspotDBHandler(_context).deletePoint(_new_point);
             }
         }, (Integer.parseInt(scene_expiry_time) * 1000));
 

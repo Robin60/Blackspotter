@@ -3,6 +3,7 @@ package com.icrowsoft.blackspotter.SyncDB;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
@@ -64,7 +65,67 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                     }
                 } else {
                     Log.i("Kibet", "-- Data already in DB");// TODO: 7/29/16 delete
+
+                    // do down pull
+                    do_data_pull();
                 }
+            }
+
+            private void do_data_pull() {
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+
+                        online_DB.child("blackspots").addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(DataSnapshot dataSnapshot) {
+                                Log.e("Kibet", "FULL SYNC >> " + dataSnapshot.toString());
+                                if (dataSnapshot.exists()) {
+
+                                    // truncate DB
+                                    new BlackspotDBHandler(_context).truncateBlackspotsTable();
+
+                                    // loop through json
+                                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                                        // get country
+                                        String country = postSnapshot.getKey();
+
+                                        for (DataSnapshot countrySnapshot : postSnapshot.getChildren()) {
+                                            // get firebase key
+                                            String firebase_key = countrySnapshot.getKey();
+
+                                            MyPointOnMap my_point = new MyPointOnMap();
+                                            my_point.setName(countrySnapshot.child("name").getValue().toString());
+                                            my_point.setLatitude(countrySnapshot.child("latitude").getValue().toString());
+                                            my_point.setLongitude(countrySnapshot.child("longitude").getValue().toString());
+                                            my_point.setCases(Integer.parseInt(countrySnapshot.child("cases").getValue().toString()));
+                                            my_point.setLastModified(countrySnapshot.child("lastModified").getValue().toString());
+                                            my_point.setCountry(country);
+                                            my_point.setDescription(countrySnapshot.child("description").getValue().toString());
+                                            my_point.setCause(countrySnapshot.child("cause").getValue().toString());
+                                            my_point.setPhoto(countrySnapshot.child("photo").getValue().toString());
+                                            my_point.setFirebaseKey(firebase_key);
+
+                                            Log.e("Kibet", "Saving -- " + countrySnapshot.child("name").getValue().toString());
+
+                                            // insert new points to DB
+                                            new BlackspotDBHandler(_context).addMyPoinOnMap(my_point, false);
+                                        }
+                                    }
+
+                                    // send broadcast
+                                    _context.sendBroadcast(new Intent("REFRESH_MARKERS"));
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(DatabaseError databaseError) {
+
+                            }
+                        });
+                        return null;
+                    }
+                }.execute();
             }
 
             @Override

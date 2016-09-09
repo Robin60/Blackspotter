@@ -2,6 +2,7 @@ package com.icrowsoft.blackspotter.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -35,77 +36,97 @@ public class OnlineDBListener extends Service {
         my_db_ref = online_DB.child("blackspots");
 
         // set child event listener
-        my_db_ref.addChildEventListener(childEventListener = new ChildEventListener() {
+        my_db_ref.child("KE").addChildEventListener(childEventListener = new ChildEventListener() {
             @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-                Log.i("Kibet", "Added: " + s + " --Snapshot: " + dataSnapshot);
-                // get country
-                String country = dataSnapshot.getKey();
+            public void onChildAdded(final DataSnapshot dataSnapshot, String s) {
+                Log.e("Kibet", "Added to KE: " + dataSnapshot);
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+                        // get firebase key
+                        String firebase_key = dataSnapshot.getKey();
 
-                // loop through json
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        // get country
+                        String country = "KE";
 
-                    MyPointOnMap my_point = new MyPointOnMap();
-                    my_point.setName(postSnapshot.child("name").getValue().toString());
-                    my_point.setLatitude(postSnapshot.child("latitude").getValue().toString());
-                    my_point.setLongitude(postSnapshot.child("longitude").getValue().toString());
-                    my_point.setCases(Integer.parseInt(postSnapshot.child("cases").getValue().toString()));
-                    my_point.setLastModified(postSnapshot.child("lastModified").getValue().toString());
-                    my_point.setCountry(country);
-                    my_point.setDescription(postSnapshot.child("description").getValue().toString());
-                    my_point.setCause(postSnapshot.child("cause").getValue().toString());
-                    my_point.setPhoto(postSnapshot.child("photo").getValue().toString());
-                    my_point.setFirebaseKey(postSnapshot.child("firebaseKey").getValue().toString());
+//                        // loop through json
+//                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
 
-                    // insert new points to DB
-                    new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(my_point, false);
-                }
+                        MyPointOnMap my_point = new MyPointOnMap();
+                        my_point.setName(dataSnapshot.child("name").getValue().toString());
+                        my_point.setLatitude(dataSnapshot.child("latitude").getValue().toString());
+                        my_point.setLongitude(dataSnapshot.child("longitude").getValue().toString());
+                        my_point.setCases(Integer.parseInt(dataSnapshot.child("cases").getValue().toString()));
+                        my_point.setLastModified(dataSnapshot.child("lastModified").getValue().toString());
+                        my_point.setCountry(country);
+                        my_point.setDescription(dataSnapshot.child("description").getValue().toString());
+                        my_point.setCause(dataSnapshot.child("cause").getValue().toString());
+                        my_point.setPhoto(dataSnapshot.child("photo").getValue().toString());
+                        my_point.setFirebaseKey(firebase_key);
 
-                // send broadcast
-                sendBroadcast(new Intent("REFRESH_MARKERS"));
+                        // insert new points to DB
+                        new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(my_point, false);
+//                        }
+
+                        // send broadcast
+                        sendBroadcast(new Intent("REFRESH_MARKERS"));
+                        return null;
+                    }
+                }.execute();
             }
 
             @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-                // get country
-                String country = dataSnapshot.getKey();
-
-                // get database reference
-                BlackspotDBHandler my_offline_db = new BlackspotDBHandler(getBaseContext());
-
-                // truncate DB
-                my_offline_db.truncateBlackspotsTable();
-
-                // loop through json
-                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
-
-                    MyPointOnMap my_point = new MyPointOnMap();
-                    my_point.setName(postSnapshot.child("name").getValue().toString());
-                    my_point.setLatitude(postSnapshot.child("latitude").getValue().toString());
-                    my_point.setLongitude(postSnapshot.child("longitude").getValue().toString());
-                    my_point.setCases(Integer.parseInt(postSnapshot.child("cases").getValue().toString()));
-                    my_point.setLastModified(postSnapshot.child("lastModified").getValue().toString());
-                    my_point.setCountry(country);
-                    my_point.setDescription(postSnapshot.child("description").getValue().toString());
-                    my_point.setCause(postSnapshot.child("cause").getValue().toString());
-                    my_point.setPhoto(postSnapshot.child("photo").getValue().toString());
-                    my_point.setFirebaseKey(postSnapshot.child("firebaseKey").getValue().toString());
-
-                    // insert new points to DB
-                    my_offline_db.addMyPoinOnMap(my_point, false);
-                }
-
-                // send broadcast
-                sendBroadcast(new Intent("REFRESH_MARKERS"));
+            public void onChildChanged(final DataSnapshot dataSnapshot, String s) {
+                Log.e("Kibet", "Changed in KE: " + dataSnapshot);
             }
 
             @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
+            public void onChildRemoved(final DataSnapshot dataSnapshot) {
+                Log.e("Kibet", "Removed from KE: " + dataSnapshot);
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... voids) {
+
+                        // get country
+                        String country = "KE";
+
+                        // get database reference
+                        BlackspotDBHandler my_offline_db = new BlackspotDBHandler(getBaseContext());
+
+//                        // truncate DB
+//                        my_offline_db.truncateBlackspotsTable();
+
+//                        // loop through json
+//                        for (DataSnapshot postSnapshot : dataSnapshot.getChildren()) {
+                        // get firebase key
+                        String firebase_key = dataSnapshot.getKey();
+
+                        MyPointOnMap my_point = new MyPointOnMap();
+                        my_point.setName(dataSnapshot.child("name").getValue().toString());
+                        my_point.setLatitude(dataSnapshot.child("latitude").getValue().toString());
+                        my_point.setLongitude(dataSnapshot.child("longitude").getValue().toString());
+                        my_point.setCases(Integer.parseInt(dataSnapshot.child("cases").getValue().toString()));
+                        my_point.setLastModified(dataSnapshot.child("lastModified").getValue().toString());
+                        my_point.setCountry(country);
+                        my_point.setDescription(dataSnapshot.child("description").getValue().toString());
+                        my_point.setCause(dataSnapshot.child("cause").getValue().toString());
+                        my_point.setPhoto(dataSnapshot.child("photo").getValue().toString());
+                        my_point.setFirebaseKey(firebase_key);
+
+                        // insert new points to DB
+                        my_offline_db.deletePoint(my_point);
+//                        }
+
+                        // send broadcast
+                        sendBroadcast(new Intent("REFRESH_MARKERS"));
+                        return null;
+                    }
+                }.execute();
             }
 
             @Override
             public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
             }
 
             @Override
