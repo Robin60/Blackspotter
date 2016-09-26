@@ -317,8 +317,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         my_current_location = new Location("dummy_provider");
         my_current_location.setLatitude(-1.29207);
         my_current_location.setLongitude(36.8219);
-        my_current_location.setLatitude(0);
-        my_current_location.setLongitude(0);
+//        my_current_location.setLatitude(0);
+//        my_current_location.setLongitude(0);
 
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             Toast my_toast = Toast.makeText(getBaseContext(), "Location Access denied", Toast.LENGTH_SHORT);
@@ -659,6 +659,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 // Starts parsing data
                 routes = parser.parse(jObject);
             } catch (Exception e) {
+                Log.i("Kibet", "Error parsing google places: " + e.getMessage());
                 e.printStackTrace();
             }
             return routes;
@@ -667,8 +668,9 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         // Executes in UI thread, after the parsing process
         @Override
         protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            Log.i("Kibet", "RESULT >> " + result.toString());
             if (!(result.size() > 0)) {
-                Snackbar.make(fab_add_new, "Seems API Quota Limit Reached", Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(fab_add_new, "No Start OR API Quota Reached", Snackbar.LENGTH_LONG).show();
             } else {
 
                 ArrayList<LatLng> points = null;
@@ -965,10 +967,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 if (!found) {
                     if (!isWithinSpot("Danger Zone", my_current_location)) {
                         // handle add this location to map
-                        Snackbar.make(fab_add_new, "Duplicate. Vary position a bit", Snackbar.LENGTH_SHORT).show();
+                        add_location_to_DB_via_click("Add Danger Zone", "Add this location as a danger zone?", "Danger zone", my_current_location);
                     }
                 } else {
-                    Snackbar.make(fab_add_new, "Duplicate", Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(fab_add_new, "Duplicate. Vary position a bit", Snackbar.LENGTH_SHORT).show();
                 }
 
                 // hide fabs
@@ -1102,6 +1104,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                                     .build(this);
                             startActivityForResult(intent, PLACE_PICKER_REQUEST_CODE);
                         } catch (GooglePlayServicesRepairableException e) {
+                            Toast.makeText(getBaseContext(), "Repair Google Play services", Toast.LENGTH_SHORT).show();
                             // TODO: Handle the error.
                         } catch (GooglePlayServicesNotAvailableException e) {
                             // TODO: Handle the error.
@@ -1178,6 +1181,8 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                     LatLng origin = new LatLng(my_current_location.getLatitude(), my_current_location.getLongitude());
                     LatLng dest = place.getLatLng();
+
+                    Log.e("Kibet", "Origin:\nLat>>" + my_current_location.getLatitude() + "\nLong>>" + my_current_location.getLongitude());
 
                     // Getting URL to the Google Directions API
                     String url = getDirectionsUrl(origin, dest);

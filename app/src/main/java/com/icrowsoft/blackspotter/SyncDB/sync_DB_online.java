@@ -79,7 +79,7 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                         online_DB.child("blackspots").addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(DataSnapshot dataSnapshot) {
-                                Log.e("Kibet", "FULL SYNC >> " + dataSnapshot.toString());
+//                                Log.e("Kibet", "FULL SYNC >> " + dataSnapshot.toString());
                                 if (dataSnapshot.exists()) {
 
                                     // truncate DB

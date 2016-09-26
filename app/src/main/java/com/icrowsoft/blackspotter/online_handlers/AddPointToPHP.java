@@ -30,7 +30,7 @@ public class AddPointToPHP {
             protected Void doInBackground(Void... voids) {
 
                 //Creating a string request
-                StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://192.168.0.18/blackspotter/add_point.php",
+                StringRequest stringRequest = new StringRequest(Request.Method.POST, "http://192.168.43.169/blackspotter/add_point.php",
                         new Response.Listener<String>() {
                             public int current_version;
 
@@ -74,7 +74,7 @@ public class AddPointToPHP {
                         params.put("firebase_key", String.valueOf(point.getFirebaseKey()));
                         params.put("country", String.valueOf(point.getCountry()));
 
-                        Log.e("Kibet", "Add to PHP params >> " + params);
+//                        Log.e("Kibet", "Add to PHP params >> " + params);
 
                         return params;
                     }

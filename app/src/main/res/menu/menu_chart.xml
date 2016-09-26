@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/cmd_use_actual"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:menuCategory="system"
+        android:title="Use Actual"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/cmd_use_dummy"
+        android:icon="@android:drawable/ic_menu_manage"
+        android:menuCategory="system"
+        android:title="Use Dummy"
+        app:showAsAction="never" />
+</menu>
