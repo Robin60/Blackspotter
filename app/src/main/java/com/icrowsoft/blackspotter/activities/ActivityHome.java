@@ -91,7 +91,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 
-public class Home extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
+public class ActivityHome extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
 
     private GoogleMap mMap;
     private Animation fab_close;
@@ -105,7 +105,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     private TextView lbl_accuracy;
     private View warning_dot;
     private Polyline current_polyline;
-    private Home my_activity;
+    private ActivityHome my_activity;
     private List<MyPointOnMap> all_points;
     private TextView lbl_accidents;
     private TextView lbl_blackspots;
@@ -369,15 +369,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                 // update my location
                 my_current_location = location;
 
-//                // create marker
-//                MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-//
-//                // Changing marker icon
-//                marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-//
-//                // adding marker
-//                my_location_marker = mMap.addMarker(marker);
-
                 // display lbl_accuracy
                 lbl_accuracy.setText("Acc: " + accuracy);
             }
@@ -402,25 +393,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 
                             // update my location
                             my_current_location = location;
-
-//                            // create marker
-//                            MarkerOptions marker = new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).title("My Location");
-//
-//                            // Changing marker icon
-//                            marker.icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN));
-//
-//                            // add a point at the end of my_markers
-//                            int pos = my_markers.size();
-//
-//                            MyPointOnMap me = new MyPointOnMap();
-//                            me.setName("My Location");
-//                            me.setLatitude("" + location.getLatitude());
-//                            me.setLongitude("" + location.getLongitude());
-//
-//                            my_markers.put("" + pos, me);
-//
-//                            // adding marker
-//                            my_location_marker = mMap.addMarker(marker);
 
                             // display lbl_accuracy
                             lbl_accuracy.setText("Acc: " + accuracy);
@@ -494,73 +466,6 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
 //            Log.e("Kibet", "Error: Cell tower not available");
 //        }
     }
-
-//    @Override
-//    public boolean onLongClick(View view) {
-//        Log.i("Kibet", "Long click detected: " + view.getId());
-//        String title = " ";
-//        switch (view.getId()) {
-//            case R.id.fab_black_spot:
-//                title = "Set black spot";
-//                Toast.makeText(Home.this, title, Toast.LENGTH_SHORT).show();
-//                break;
-//            case R.id.fab_accident_scene:
-//                title = "Set accident scene";
-//                Toast.makeText(Home.this, title, Toast.LENGTH_SHORT).show();
-//                break;
-//            case R.id.fab_danger_zone:
-//                title = "Set danger scene";
-//                Toast.makeText(Home.this, title, Toast.LENGTH_SHORT).show();
-//                break;
-//        }
-//
-////        Toast myToast = Toast.makeText(getBaseContext(), title, Toast.LENGTH_SHORT);
-////        myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
-////        myToast.show();
-//
-//        // cancels normal click trigger
-//        return true;
-//    }
-
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//
-//        // ATTENTION: This was auto-generated to implement the App Indexing API.
-//        // See https://g.co/AppIndexing/AndroidStudio for more information.
-//        client.connect();
-//        Action viewAction = Action.newAction(
-//                Action.TYPE_VIEW, // TODO: choose an action type.
-//                "Home Page", // TODO: Define a title for the content shown.
-//                // TODO: If you have web page content that matches this app activity's content,
-//                // make sure this auto-generated web page URL is correct.
-//                // Otherwise, set the URL to null.
-//                Uri.parse("http://host/path"),
-//                // TODO: Make sure this auto-generated app URL is correct.
-//                Uri.parse("android-app://com.icrowsoft.blackspotter.activities/http/host/path")
-//        );
-//        AppIndex.AppIndexApi.start(client, viewAction);
-//    }
-
-//    @Override
-//    public void onStop() {
-//        super.onStop();
-//
-//        // ATTENTION: This was auto-generated to implement the App Indexing API.
-//        // See https://g.co/AppIndexing/AndroidStudio for more information.
-//        Action viewAction = Action.newAction(
-//                Action.TYPE_VIEW, // TODO: choose an action type.
-//                "Home Page", // TODO: Define a title for the content shown.
-//                // TODO: If you have web page content that matches this app activity's content,
-//                // make sure this auto-generated web page URL is correct.
-//                // Otherwise, set the URL to null.
-//                Uri.parse("http://host/path"),
-//                // TODO: Make sure this auto-generated app URL is correct.
-//                Uri.parse("android-app://com.icrowsoft.blackspotter.activities/http/host/path")
-//        );
-//        AppIndex.AppIndexApi.end(client, viewAction);
-//        client.disconnect();
-//    }
 
     // Fetches data from url passed
     private class DownloadTask extends AsyncTask<String, Void, String> {
@@ -1026,6 +931,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                         new_point.setLongitude(String.valueOf(point.getLongitude()));
                         new_point.setDescription(description);
                         new_point.setFirebaseKey("null");
+                        new_point.setPostedBy();
 
                         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                         startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
@@ -1055,6 +961,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
         new_point.setLongitude(String.valueOf(point.getLongitude()));
         new_point.setDescription(description);
         new_point.setFirebaseKey("");
+        new_point.setPostedBy();
 
         // add point to DB
         new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
@@ -1079,10 +986,10 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.cmd_settings:
-                startActivity(new Intent(getBaseContext(), Home_Prefence.class));
+                startActivity(new Intent(getBaseContext(), ActivityHome_Prefence.class));
                 break;
             case R.id.cmd_charts:
-                startActivity(new Intent(getBaseContext(), Charts.class));
+                startActivity(new Intent(getBaseContext(), ActivityCharts.class));
                 break;
             case R.id.cmd_directions:
 
@@ -1108,7 +1015,7 @@ public class Home extends AppCompatActivity implements OnMapReadyCallback, Googl
                             // TODO: Handle the error.
                         } catch (GooglePlayServicesNotAvailableException e) {
                             // TODO: Handle the error.
-                            Toast.makeText(Home.this, "Google Play Services Missing", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(ActivityHome.this, "Google Play Services Missing", Toast.LENGTH_SHORT).show();
                         }
 
 //                        // request for location picker

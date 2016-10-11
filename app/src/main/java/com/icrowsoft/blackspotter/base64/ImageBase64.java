@@ -95,7 +95,6 @@ public class ImageBase64 {
     /**
      * Encode an image into a base64 image.
      *
-     *
      * @return String: an encoded image in base64 String format.
      * @throws FileNotFoundException
      */

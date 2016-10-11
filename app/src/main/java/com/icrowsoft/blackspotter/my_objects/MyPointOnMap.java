@@ -9,6 +9,7 @@ import java.io.Serializable;
  */
 public class MyPointOnMap implements Serializable {
 
+    private String _postedBy;
     private String _firebase_key;
     private String _cause;
     private String _photo;
@@ -25,7 +26,7 @@ public class MyPointOnMap implements Serializable {
     }
 
     // constructor
-    public MyPointOnMap(String name, String lat, String lon, int cases, String last_modified, String description, String country, String photo, String cause, String firebase_key) {
+    public MyPointOnMap(String name, String lat, String lon, int cases, String last_modified, String description, String country, String photo, String cause, String firebase_key,String postedBy) {
         this._name = name;
         this._lat = lat;
         this._lon = lon;
@@ -36,6 +37,7 @@ public class MyPointOnMap implements Serializable {
         this._cause = cause;
         this._photo = photo;
         this._firebase_key = firebase_key;
+        this._postedBy= postedBy;
     }
 
     // getting name
@@ -136,5 +138,14 @@ public class MyPointOnMap implements Serializable {
     // setting cause
     public void setFirebaseKey(String firebase_key) {
         this._firebase_key = firebase_key;
+    }// getting cause
+
+    public String getPostedBy() {
+        return (TextUtils.isEmpty(this._postedBy)) ? "null" : _postedBy;
+    }
+
+    // setting cause
+    public void setPostedBy(String postedBy) {
+        this._postedBy = postedBy;
     }
 }

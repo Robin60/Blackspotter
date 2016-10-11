@@ -174,6 +174,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                     my_point.setPhoto(cursor.getString(cursor.getColumnIndex(KEY_PHOTO)));
                     my_point.setCause(cursor.getString(cursor.getColumnIndex(KEY_CAUSE)));
                     my_point.setFirebaseKey(cursor.getString(cursor.getColumnIndex(KEY_FIREBASE_KEY)));
+                    new_point.setPostedBy();
 
                     // Adding contact to list
                     myPointsList.add(my_point);

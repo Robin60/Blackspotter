@@ -27,13 +27,13 @@ dependencies {
     // Single target that includes all FirebaseUI libraries
     compile 'com.firebaseui:firebase-ui:0.6.0'
     // Firebase
-    compile('com.google.firebase:firebase-core:9.2.1') {
+    compile('com.google.firebase:firebase-core:9.+') {
         exclude module: 'play-services-base'
         exclude module: 'support-v4'
         exclude module: 'support-annotations'
     }
     compile 'com.google.firebase:firebase-database:9.6.1'
-    compile 'com.google.firebase:firebase-ads:9.6.1'
+    // compile 'com.google.firebase:firebase-ads:9.6.1'
 
     // google sign in
     compile 'com.google.android.gms:play-services-auth:9.6.1'
