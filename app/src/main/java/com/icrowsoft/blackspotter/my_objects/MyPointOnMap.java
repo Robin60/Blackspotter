@@ -26,7 +26,7 @@ public class MyPointOnMap implements Serializable {
     }
 
     // constructor
-    public MyPointOnMap(String name, String lat, String lon, int cases, String last_modified, String description, String country, String photo, String cause, String firebase_key,String postedBy) {
+    public MyPointOnMap(String name, String lat, String lon, int cases, String last_modified, String description, String country, String photo, String cause, String firebase_key, String postedBy) {
         this._name = name;
         this._lat = lat;
         this._lon = lon;
@@ -37,7 +37,7 @@ public class MyPointOnMap implements Serializable {
         this._cause = cause;
         this._photo = photo;
         this._firebase_key = firebase_key;
-        this._postedBy= postedBy;
+        this._postedBy = postedBy;
     }
 
     // getting name
