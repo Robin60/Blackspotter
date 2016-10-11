@@ -36,7 +36,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".activities.Home"
+            android:name=".activities.LoginWithGoogle"
             android:label="@string/title_activity_home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,6 +44,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".activities.Home" />
         <activity android:name=".activities.Home_Prefence" />
         <activity android:name=".activities.Charts" />
 

@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">Blackspotter</string>
     <string name="title_activity_home">Blackspotter</string>
+    <string name="my_client_id">
+        982881075338-cu1ksee81vsdf4vk2cfo9qum76avtl26.apps.googleusercontent.com
+    </string>
 
     <string-array name="danger_zone_names">
         <item>Mutithi section</item>
