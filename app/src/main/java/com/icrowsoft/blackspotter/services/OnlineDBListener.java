@@ -63,6 +63,7 @@ public class OnlineDBListener extends Service {
                         my_point.setCause(dataSnapshot.child("cause").getValue().toString());
                         my_point.setPhoto(dataSnapshot.child("photo").getValue().toString());
                         my_point.setFirebaseKey(firebase_key);
+                        new_point.setPostedBy();
 
                         // insert new points to DB
                         new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(my_point, false);
@@ -112,6 +113,7 @@ public class OnlineDBListener extends Service {
                         my_point.setCause(dataSnapshot.child("cause").getValue().toString());
                         my_point.setPhoto(dataSnapshot.child("photo").getValue().toString());
                         my_point.setFirebaseKey(firebase_key);
+                        new_point.setPostedBy();
 
                         // insert new points to DB
                         my_offline_db.deletePoint(my_point);

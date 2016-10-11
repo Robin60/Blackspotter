@@ -36,7 +36,7 @@
             android:value="@string/google_maps_key" />
 
         <activity
-            android:name=".activities.Home"
+            android:name=".activities.ActivityLogin"
             android:label="@string/title_activity_home">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,8 +44,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.Home_Prefence" />
-        <activity android:name=".activities.Charts" />
+        <activity android:name=".activities.ActivityHome" />
+        <activity android:name=".activities.ActivityHome_Prefence" />
+        <activity android:name=".activities.ActivityCharts" />
 
         <service android:name=".services.Notifier" />
         <service android:name=".services.OnlineDBListener" />

@@ -15,7 +15,7 @@ import com.icrowsoft.blackspotter.R;
 /**
  * Created by teardrops on 7/27/16.
  */
-public class Home_Prefence extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
+public class ActivityHome_Prefence extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
     private SharedPreferences settings;
     private boolean allowed_notifications_value;
     private EditTextPreference distance_to_notify_view;

@@ -199,6 +199,7 @@ public class AddPointToOnlineDB {
                     new_point.setFirebaseKey("null");
                     new_point.setPhoto(new_photo);
                     new_point.setCause(new_cause);
+                    new_point.setPostedBy();
 
                     Log.i("Kibet", "Adding " + new_point.getName());
 

@@ -64,6 +64,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
                 my_point.setLastModified("" + System.currentTimeMillis());
                 my_point.setCountry("");
                 my_point.setDescription("Black spot");
+                new_point.setPostedBy();
 
                 // new insert
                 my_db.addMyPoinOnMap(my_point, true);
@@ -80,6 +81,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
                 my_point.setLastModified("" + System.currentTimeMillis());
                 my_point.setCountry("");
                 my_point.setDescription("Danger zone");
+                new_point.setPostedBy();
 
                 // new insert
                 my_db.addMyPoinOnMap(my_point, true);

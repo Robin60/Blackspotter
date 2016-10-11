@@ -38,8 +38,7 @@ public class MyNotifier {
         }
 
 
-
-//        Intent intent = new Intent(context, Home.class);// TODO: 7/30/16 handle notif clicks
+//        Intent intent = new Intent(context, ActivityHome.class);// TODO: 7/30/16 handle notif clicks
 //
 //        final NotificationManager mNotificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 //

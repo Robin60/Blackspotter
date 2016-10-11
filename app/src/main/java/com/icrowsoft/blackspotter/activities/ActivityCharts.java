@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * Created by teardrops on 8/16/16.
  */
-public class Charts extends AppCompatActivity {
+public class ActivityCharts extends AppCompatActivity {
     private int[] cases;
 
     @Override
