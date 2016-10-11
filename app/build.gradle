@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 24
-    buildToolsVersion "24.0.1"
+    buildToolsVersion "24.0.3"
 
     defaultConfig {
         applicationId "com.icrowsoft.blackspotter"
@@ -24,16 +24,14 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.2.1'
     compile 'com.google.android.gms:play-services-maps:9.6.1'
-    // Single target that includes all FirebaseUI libraries
-    compile 'com.firebaseui:firebase-ui:0.6.0'
-    // Firebase
+
     compile('com.google.firebase:firebase-core:9.+') {
         exclude module: 'play-services-base'
         exclude module: 'support-v4'
         exclude module: 'support-annotations'
     }
     compile 'com.google.firebase:firebase-database:9.6.1'
-    // compile 'com.google.firebase:firebase-ads:9.6.1'
+    compile 'com.google.firebase:firebase-auth:9.6.1'
 
     // google sign in
     compile 'com.google.android.gms:play-services-auth:9.6.1'
@@ -41,12 +39,16 @@ dependencies {
     compile 'com.android.support:design:24.2.1'
     compile 'com.google.android.gms:play-services-places:9.6.1'
     compile 'com.google.maps.android:android-maps-utils:0.4.3'
+
     // manages dialogs
     compile 'com.afollestad.material-dialogs:core:0.8.6.2'
+
     // used to draw interactive charts
     compile project(':mpandroidchartlibrary-2-2-4')
+
     // used for notifications
     compile 'com.github.halysongoncalves:pugnotification:1.8.1'
+
     // used to access internet
     compile 'com.mcxiaoke.volley:library-aar:1.0.1'
 }

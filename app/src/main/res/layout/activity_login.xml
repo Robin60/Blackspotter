@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:gravity="center_horizontal"
-        android:text= "Login"
+        android:text="Login"
         android:textColor="#fff"
         android:textSize="26sp"
         android:textStyle="bold" />
@@ -52,7 +52,24 @@
                         android:layout_height="wrap_content"
                         android:drawableLeft="@drawable/ic_form_people"
                         android:drawableTint="@color/colorAccent"
-                        android:hint="User Name"
+                        android:hint="Email"
+                        android:inputType="textEmailAddress"
+                        android:singleLine="true" />
+                </android.support.design.widget.TextInputLayout>
+
+                <android.support.design.widget.TextInputLayout
+                    android:id="@+id/cnt_confirm_password"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <EditText
+                        android:id="@+id/txt_confirm_email"
+                        android:layout_width="fill_parent"
+                        android:layout_height="wrap_content"
+                        android:drawableLeft="@drawable/ic_form_people"
+                        android:drawableTint="@color/colorAccent"
+                        android:hint="Confirm email"
                         android:inputType="textEmailAddress"
                         android:singleLine="true" />
                 </android.support.design.widget.TextInputLayout>
@@ -82,13 +99,27 @@
 
 
                 <Button
+                    android:id="@+id/btn_signup"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_margin="2dp"
+                    android:background="@null"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
+                    android:text="New? Create account..."
+                    android:textAllCaps="false"
+                    android:textColor="#000"
+                    android:textSize="12sp" />
+
+                <Button
                     android:id="@+id/btn_login"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:focusable="true"
-                    android:focusableInTouchMode="true"
                     android:layout_margin="22dp"
                     android:background="@color/colorAccent"
+                    android:focusable="true"
+                    android:focusableInTouchMode="true"
                     android:text="Sign in"
                     android:textAllCaps="false"
                     android:textColor="#fff"
@@ -101,10 +132,10 @@
         android:id="@+id/user_profile_photo"
         android:layout_width="50dp"
         android:layout_height="50dp"
+        android:layout_below="@+id/lbl_login_title"
+        android:layout_centerHorizontal="true"
         android:background="@drawable/user_profile_image_background"
         android:elevation="4dp"
         android:scaleType="fitCenter"
-        android:src="@mipmap/ic_launcher"
-        android:layout_below="@+id/lbl_login_title"
-        android:layout_centerHorizontal="true" />
+        android:src="@mipmap/ic_launcher" />
 </RelativeLayout>
