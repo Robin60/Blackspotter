@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
@@ -122,6 +123,7 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
     private Handler handler;
     private HashMap<String, MyPointOnMap> my_markers;
     private MyPointOnMap new_point;
+    private String logged_in_user_email;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +150,11 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
 
         // create handler
         handler = new Handler();
+
+        SharedPreferences prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
+
+        // get user_id to test if session exists
+        logged_in_user_email = prefs.getString("email", "");
 
         BlackspotDBHandler my_db = new BlackspotDBHandler(getBaseContext());
 
@@ -931,7 +938,7 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
                         new_point.setLongitude(String.valueOf(point.getLongitude()));
                         new_point.setDescription(description);
                         new_point.setFirebaseKey("null");
-                        new_point.setPostedBy();
+                        new_point.setPostedBy(logged_in_user_email);
 
                         Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                         startActivityForResult(cameraIntent, CAMERA_REQUEST_CODE);
@@ -961,7 +968,7 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
         new_point.setLongitude(String.valueOf(point.getLongitude()));
         new_point.setDescription(description);
         new_point.setFirebaseKey("");
-        new_point.setPostedBy();
+        new_point.setPostedBy(logged_in_user_email);
 
         // add point to DB
         new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);

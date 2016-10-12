@@ -105,7 +105,7 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                                             my_point.setCause(countrySnapshot.child("cause").getValue().toString());
                                             my_point.setPhoto(countrySnapshot.child("photo").getValue().toString());
                                             my_point.setFirebaseKey(firebase_key);
-                                            new_point.setPostedBy();
+//                                            new_point.setPostedBy();//todo xxxx
 
                                             Log.e("Kibet", "Saving -- " + countrySnapshot.child("name").getValue().toString());
 

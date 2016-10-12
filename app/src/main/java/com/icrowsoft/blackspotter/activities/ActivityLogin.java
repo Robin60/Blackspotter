@@ -76,6 +76,9 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
         btn_login = (Button) findViewById(R.id.btn_login);
         btn_signup = (Button) findViewById(R.id.btn_signup);
 
+        btn_login.setOnClickListener(this);
+        btn_signup.setOnClickListener(this);
+
         // request focus
         btn_login.requestFocus();
     }

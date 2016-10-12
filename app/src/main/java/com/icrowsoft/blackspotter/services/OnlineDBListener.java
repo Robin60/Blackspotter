@@ -2,6 +2,7 @@ package com.icrowsoft.blackspotter.services;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
@@ -30,6 +31,11 @@ public class OnlineDBListener extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+
+        SharedPreferences prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
+
+        // get user_id to test if session exists
+        String logged_in_user_email = prefs.getString("email", "");
 
         final DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
 
@@ -63,7 +69,7 @@ public class OnlineDBListener extends Service {
                         my_point.setCause(dataSnapshot.child("cause").getValue().toString());
                         my_point.setPhoto(dataSnapshot.child("photo").getValue().toString());
                         my_point.setFirebaseKey(firebase_key);
-                        new_point.setPostedBy();
+//                        my_point.setPostedBy();//todo xxxx
 
                         // insert new points to DB
                         new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(my_point, false);
@@ -113,7 +119,7 @@ public class OnlineDBListener extends Service {
                         my_point.setCause(dataSnapshot.child("cause").getValue().toString());
                         my_point.setPhoto(dataSnapshot.child("photo").getValue().toString());
                         my_point.setFirebaseKey(firebase_key);
-                        new_point.setPostedBy();
+//                        my_point.setPostedBy();//todo xxxx
 
                         // insert new points to DB
                         my_offline_db.deletePoint(my_point);

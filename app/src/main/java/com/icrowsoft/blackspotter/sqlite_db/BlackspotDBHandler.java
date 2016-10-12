@@ -2,6 +2,7 @@ package com.icrowsoft.blackspotter.sqlite_db;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseLockedException;
@@ -150,6 +151,11 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     // Getting All Contacts
     public List<MyPointOnMap> getAllPoints() {
 
+        SharedPreferences prefs =_context.getSharedPreferences("LoggedInUsersPrefs", 0);
+
+        // get user_id to test if session exists
+        String logged_in_user_email = prefs.getString("email", "");
+
         List<MyPointOnMap> myPointsList = new ArrayList<>();
 
         try {
@@ -174,7 +180,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                     my_point.setPhoto(cursor.getString(cursor.getColumnIndex(KEY_PHOTO)));
                     my_point.setCause(cursor.getString(cursor.getColumnIndex(KEY_CAUSE)));
                     my_point.setFirebaseKey(cursor.getString(cursor.getColumnIndex(KEY_FIREBASE_KEY)));
-                    new_point.setPostedBy();
+                    my_point.setPostedBy(logged_in_user_email);
 
                     // Adding contact to list
                     myPointsList.add(my_point);

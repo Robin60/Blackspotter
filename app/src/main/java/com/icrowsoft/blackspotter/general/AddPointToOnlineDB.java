@@ -3,6 +3,7 @@ package com.icrowsoft.blackspotter.general;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.support.design.widget.Snackbar;
@@ -174,7 +175,7 @@ public class AddPointToOnlineDB {
                     }
                 }
 
-                Log.i("Kibet", "To be deleted size: " + references_to_delete.size());
+                Log.i("Kibet", "To be deleted size: " + references_to_delete.size());// TODO: 12/10/2016 DELETE
 
                 // check if point has been marked more than thrice
                 if (references_to_delete.size() > 2) {
@@ -182,9 +183,15 @@ public class AddPointToOnlineDB {
                     // delete these locations
                     for (int i = 0; i < references_to_delete.size(); i++) {
                         new BlackspotDBHandler(_context).deletePoint(references_to_delete.get(i));
-                        Log.e("Kibet", "Requesting delete: " + references_to_delete.get(i));
+                        Log.e("Kibet", "Requesting delete: " + references_to_delete.get(i));// TODO: 12/10/2016 DELETE
                     }
-                    // add a new blackspot
+
+                    SharedPreferences prefs = _context.getSharedPreferences("LoggedInUsersPrefs", 0);
+
+                    // get user_id to test if session exists
+                    String logged_in_user_email = prefs.getString("email", "");
+
+
                     // create a point from current location
                     MyPointOnMap new_point = new MyPointOnMap();
 
@@ -199,7 +206,7 @@ public class AddPointToOnlineDB {
                     new_point.setFirebaseKey("null");
                     new_point.setPhoto(new_photo);
                     new_point.setCause(new_cause);
-                    new_point.setPostedBy();
+                    new_point.setPostedBy(logged_in_user_email);
 
                     Log.i("Kibet", "Adding " + new_point.getName());
 
