@@ -69,10 +69,10 @@ import com.icrowsoft.blackspotter.SyncDB.sync_DB_offline;
 import com.icrowsoft.blackspotter.adapters.MyInfoWindowAdapter;
 import com.icrowsoft.blackspotter.base64.ImageBase64;
 import com.icrowsoft.blackspotter.general.AddMarkersToMap;
-import com.icrowsoft.blackspotter.general.AddPointToOnlineDB;
 import com.icrowsoft.blackspotter.general.DirectionsJSONParser;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
 import com.icrowsoft.blackspotter.roundImage.TextDrawable;
+import com.icrowsoft.blackspotter.services.AddPointOnline;
 import com.icrowsoft.blackspotter.services.Notifier;
 import com.icrowsoft.blackspotter.services.OnlineDBListener;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
@@ -231,7 +231,7 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
         lbl_danger_zones = (TextView) findViewById(R.id.lbl_danger_zones);
 
         // get FABs
-        FloatingActionButton fab_speak = (FloatingActionButton) findViewById(R.id.fab_speak);
+        final FloatingActionButton fab_speak = (FloatingActionButton) findViewById(R.id.fab_speak);
         fab_fullscreen = (FloatingActionButton) findViewById(R.id.fab_fullscreen);
         fab_add_new = (FloatingActionButton) findViewById(R.id.fab_add_new);
         fab_black_spot = (FloatingActionButton) findViewById(R.id.fab_black_spot);
@@ -301,6 +301,20 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
         IntentFilter intentFilter = new IntentFilter();
         intentFilter.addAction("REFRESH_MARKERS");
         registerReceiver(refresh_markers_listener, intentFilter);
+
+//        // Listener for no internet
+//        BroadcastReceiver no_internet_listener = new BroadcastReceiver() {
+//            @Override
+//            public void onReceive(Context context, Intent intent) {
+//                // show error
+//                Snackbar.make(fab_speak, "Internet connection failed!", Snackbar.LENGTH_LONG).show();
+//            }
+//        };
+//
+//        // register receiver
+//        intentFilter = new IntentFilter();
+//        intentFilter.addAction("REFRESH_MARKERS");
+//        registerReceiver(no_internet_listener, intentFilter);
     }
 
     /**
@@ -970,8 +984,19 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
         new_point.setFirebaseKey("");
         new_point.setPostedBy(logged_in_user_email);
 
-        // add point to DB
-        new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+        // create bundle
+        Bundle data = new Bundle();
+        data.putParcelable("new_point", new_point);
+
+        // create new intent
+        Intent dataIntent = new Intent(getBaseContext(), AddPointOnline.class);
+        dataIntent.putExtras(data);
+
+        // start background save action
+        startService(dataIntent);
+
+//        // add point to DB
+//        new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
 
         // play sound
         textToSpeech.speak(description + " successfully added", TextToSpeech.QUEUE_FLUSH, null);
@@ -1134,8 +1159,19 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
                                     // set cause
                                     new_point.setCause(text.toString());
 
-                                    // add point to DB
-                                    new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
+                                    // create bundle
+                                    Bundle data = new Bundle();
+                                    data.putParcelable("new_point", new_point);
+
+                                    // create new intent
+                                    Intent dataIntent = new Intent(getBaseContext(), AddPointOnline.class);
+                                    dataIntent.putExtras(data);
+
+                                    // start background save action
+                                    startService(dataIntent);
+
+//                                    // add point to DB
+//                                    new AddPointToOnlineDB(getApplicationContext(), handler, my_activity, mMap, fab_add_new).add_this_point(new_point);
                                     return true;
                                 }
                             })

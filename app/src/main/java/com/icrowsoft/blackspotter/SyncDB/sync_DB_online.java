@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -15,8 +16,8 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.icrowsoft.blackspotter.general.AddPointToOnlineDB;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
+import com.icrowsoft.blackspotter.services.AddPointOnline;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
 import java.util.List;
@@ -60,8 +61,19 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                     Log.i("Kibet", "All points: " + all_map_points.size());
 
                     for (final MyPointOnMap my_point : all_map_points) {
+                        // create bundle
+                        Bundle data = new Bundle();
+                        data.putParcelable("new_point", my_point);
+
+                        // create new intent
+                        Intent dataIntent = new Intent(_context, AddPointOnline.class);
+                        dataIntent.putExtras(data);
+
+                        // start background save action
+                        _context.startService(dataIntent);
+
                         // fetch country and save online
-                        new AddPointToOnlineDB(_context, _handler, _activity, _map, _fab).add_this_point(my_point);
+//                        new AddPointToOnlineDB(_context, _handler, _activity, _map, _fab).add_this_point(my_point);xxxx
                     }
                 } else {
                     Log.i("Kibet", "-- Data already in DB");// TODO: 7/29/16 delete

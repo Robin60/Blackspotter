@@ -11,12 +11,14 @@ import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.afollestad.materialdialogs.MaterialDialog;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -43,6 +45,8 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     private TextInputLayout cnt_confirm_password;
     private ActivityLogin _context;
     private SharedPreferences prefs;
+    private MaterialDialog.Builder dialog_builder;
+    private MaterialDialog progress_dialog;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -60,19 +64,25 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
             // initialization already done
         }
 
+        // prepare dialog builder
+        dialog_builder = new MaterialDialog.Builder(this)
+                .content("Please wait...")
+                .progress(true, 0);
+
         // set up onAuthentication change
         setup_on_Authentication_change();
+    }
 
-//        // set up permission listeners
-//        new ActivityCompat.OnRequestPermissionsResultCallback() {
-//            @Override
-//            public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-//                Toast.makeText(_context, "Resumed", Toast.LENGTH_SHORT).show();
-//
-//                // check if all permissions are granted
-//                request_for_permissions();
-//            }
-//        };
+    private void toggle_loading_dialog(boolean display) {
+        try {
+            if (display) {
+                progress_dialog = dialog_builder.show();
+            } else {
+                progress_dialog.dismiss();
+            }
+        } catch (Exception e) {
+            // seems dialog is not showing
+        }
     }
 
     private void setup_on_Authentication_change() {
@@ -143,19 +153,35 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     }
 
     public void log_in_user(String email, String password) {
+        // show dialog
+        toggle_loading_dialog(true);
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(TAG, "Sign in: " + task.isSuccessful());
 
-                        // If sign in fails, display a message to the user. If sign in succeeds
-                        // the auth state listener will be notified and logic to handle the
-                        // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            Log.e(TAG, "signInWithEmail:failed", task.getException());
-                            Toast.makeText(getBaseContext(), "Login failed!",
-                                    Toast.LENGTH_SHORT).show();
+                            // get error message
+                            String error = task.getException().getMessage();
+
+                            Log.e(TAG, "Error msg: " + task.getException().getMessage());
+
+                            String err_message = "Unknown error";
+                            if (error.startsWith("The password is invalid or the user does not have a password")) {
+                                err_message = "Wrong password";
+                            }
+
+                            if (error.startsWith("There is no user record corresponding to this identifier. The user may have been deleted.")) {
+                                err_message = "Unknown user";
+                            }
+
+                            Toast myToast = Toast.makeText(getBaseContext(), err_message, Toast.LENGTH_LONG);
+                            myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
+                            myToast.show();
+//
+//
                         } else {
                             // get user
                             FirebaseUser user = task.getResult().getUser();
@@ -185,11 +211,17 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
 
                             Log.e("Kibet", "logged_in_user_email: " + logged_in_user_email);
                         }
+
+                        //close dialog
+                        toggle_loading_dialog(false);
                     }
                 });
     }
 
     public void create_new_user(String email, String password) {
+        // show dialog
+        toggle_loading_dialog(true);
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
@@ -205,6 +237,9 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                         } else {
                             // // TODO: 11/10/2016  save user to preferences
                         }
+
+                        //close dialog
+                        toggle_loading_dialog(false);
                     }
                 });
     }

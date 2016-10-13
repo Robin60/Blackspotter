@@ -1,13 +1,13 @@
 package com.icrowsoft.blackspotter.my_objects;
 
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.text.TextUtils;
-
-import java.io.Serializable;
 
 /**
  * Created by teardrops on 7/17/16.
  */
-public class MyPointOnMap implements Serializable {
+public class MyPointOnMap implements Parcelable {
 
     private String _postedBy;
     private String _firebase_key;
@@ -148,4 +148,43 @@ public class MyPointOnMap implements Serializable {
     public void setPostedBy(String postedBy) {
         this._postedBy = postedBy;
     }
+
+    // Parcelling part
+    public MyPointOnMap(Parcel in){
+        String[] data = new String[11];
+
+        in.readStringArray(data);
+
+        this._name = data[0];
+        this._lat = data[1];
+        this._lon = data[2];
+        this._cases = Integer.parseInt(data[3]);
+        this._last_modified = data[4];
+        this._country = data[5];
+        this._description = data[6];
+        this._cause = data[7];
+        this._photo = data[8];
+        this._firebase_key = data[9];
+        this._postedBy = data[10];
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeStringArray(new String[] {this._name,this._lat,this._lon,this._cases+"",this._last_modified,this._country,this._description,this._cause,this._photo,this._firebase_key,this._postedBy});
+    }
+
+    public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
+        public MyPointOnMap createFromParcel(Parcel in) {
+            return new MyPointOnMap(in);
+        }
+
+        public MyPointOnMap[] newArray(int size) {
+            return new MyPointOnMap[size];
+        }
+    };
 }

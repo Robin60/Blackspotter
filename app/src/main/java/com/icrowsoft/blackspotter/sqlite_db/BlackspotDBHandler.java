@@ -42,6 +42,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     private static final String KEY_PHOTO = "photo";
     private static final String KEY_CAUSE = "cause";
     private static final String KEY_FIREBASE_KEY = "firebase_key";
+    private static final String KEY_POSTED_BY = "posted_by";
     private final Context _context;
 
     public BlackspotDBHandler(Context context) {
@@ -62,6 +63,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                 KEY_PHOTO + " text," +
                 KEY_CAUSE + " text," +
                 KEY_FIREBASE_KEY + " text," +
+                KEY_POSTED_BY + " text," +
                 KEY_COUNTRY + " text)";
         db.execSQL(CREATE_CONTACTS_TABLE);
     }
@@ -96,6 +98,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
             values.put(KEY_CAUSE, my_point.getCause());
             values.put(KEY_COUNTRY, my_point.getCountry());
             values.put(KEY_FIREBASE_KEY, my_point.getFirebaseKey());
+            values.put(KEY_POSTED_BY, my_point.getPostedBy());
 
             SQLiteDatabase db = this.getWritableDatabase();
 
@@ -180,7 +183,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
                     my_point.setPhoto(cursor.getString(cursor.getColumnIndex(KEY_PHOTO)));
                     my_point.setCause(cursor.getString(cursor.getColumnIndex(KEY_CAUSE)));
                     my_point.setFirebaseKey(cursor.getString(cursor.getColumnIndex(KEY_FIREBASE_KEY)));
-                    my_point.setPostedBy(logged_in_user_email);
+                    my_point.setPostedBy(cursor.getString(cursor.getColumnIndex(KEY_POSTED_BY)));
 
                     // Adding contact to list
                     myPointsList.add(my_point);
