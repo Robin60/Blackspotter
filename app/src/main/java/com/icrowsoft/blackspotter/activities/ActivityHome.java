@@ -62,6 +62,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.maps.android.PolyUtil;
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.SyncDB.sync_DB_offline;
@@ -160,7 +161,6 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
 
         // fetch all points from DB
         all_points = my_db.getAllPoints();
-
 
         // get view to use on the toolbar
         warning_dot = getLayoutInflater().inflate(R.layout.toolbar_home, null);
@@ -997,6 +997,11 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
                 break;
             case R.id.cmd_charts:
                 startActivity(new Intent(getBaseContext(), ActivityCharts.class));
+                break;
+            case R.id.cmd_logout:
+                FirebaseAuth.getInstance().signOut();
+                finish();
+                startActivity(new Intent(getBaseContext(), ActivityLogin.class));
                 break;
             case R.id.cmd_directions:
 

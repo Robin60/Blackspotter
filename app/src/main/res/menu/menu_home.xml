@@ -20,4 +20,10 @@
         android:menuCategory="system"
         android:title="Chart"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/cmd_logout"
+        android:icon="@android:drawable/ic_lock_lock"
+        android:menuCategory="system"
+        android:title="Logout"
+        app:showAsAction="never" />
 </menu>

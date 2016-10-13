@@ -51,6 +51,9 @@ dependencies {
 
     // used to access internet
     compile 'com.mcxiaoke.volley:library-aar:1.0.1'
+
+    // permission manager
+    compile 'net.ralphpina.permissionsmanager:permissions-manager:1.0.0'
 }
 
 apply plugin: 'com.google.gms.google-services'

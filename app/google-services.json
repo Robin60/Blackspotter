@@ -15,25 +15,17 @@
       },
       "oauth_client": [
         {
-          "client_id": "982881075338-qb25p9m7r2e5idiocm2moijtjls51cd1.apps.googleusercontent.com",
+          "client_id": "982881075338-cu1ksee81vsdf4vk2cfo9qum76avtl26.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.icrowsoft.blackspotter",
             "certificate_hash": "CD7E1FF2F3B950DAC0D8B5957245C70F641D62B4"
           }
-        },
-        {
-          "client_id": "982881075338-cfob22m3fmp0ubeao0kgteclpe2mkq5p.apps.googleusercontent.com",
-          "client_type": 3
-        },
-        {
-          "client_id": "982881075338-oe9ppa4icmh005cot7ojbp64g5ium5sq.apps.googleusercontent.com",
-          "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDS56Yopz65nMnuXw-tvDYsH2o8gwZfQ7E"
+          "current_key": "AIzaSyBuzMV4lExKFPKIPErmJmNHjCMNZAcpQf0"
         }
       ],
       "services": {
@@ -42,12 +34,7 @@
         },
         "appinvite_service": {
           "status": 2,
-          "other_platform_oauth_client": [
-            {
-              "client_id": "982881075338-cfob22m3fmp0ubeao0kgteclpe2mkq5p.apps.googleusercontent.com",
-              "client_type": 3
-            }
-          ]
+          "other_platform_oauth_client": []
         },
         "ads_service": {
           "status": 2

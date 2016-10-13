@@ -37,7 +37,8 @@
 
         <activity
             android:name=".activities.ActivityLogin"
-            android:label="@string/title_activity_home">
+            android:label="@string/title_activity_home"
+            android:noHistory="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

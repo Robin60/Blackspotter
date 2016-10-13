@@ -151,7 +151,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
     // Getting All Contacts
     public List<MyPointOnMap> getAllPoints() {
 
-        SharedPreferences prefs =_context.getSharedPreferences("LoggedInUsersPrefs", 0);
+        SharedPreferences prefs = _context.getSharedPreferences("LoggedInUsersPrefs", 0);
 
         // get user_id to test if session exists
         String logged_in_user_email = prefs.getString("email", "");

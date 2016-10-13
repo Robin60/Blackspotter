@@ -1,10 +1,13 @@
 package com.icrowsoft.blackspotter.activities;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
 import android.util.Log;
@@ -21,6 +24,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.icrowsoft.blackspotter.R;
 
+import net.ralphpina.permissionsmanager.PermissionsManager;
+
 /**
  * Created by kibet-GDTL on 11/10/2016.
  */
@@ -35,33 +40,69 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     private FirebaseAuth.AuthStateListener mAuthListener;
     private EditText txt_confirm_email;
     private Button btn_signup;
-    private EditText cnt_confirm_password;
+    private TextInputLayout cnt_confirm_password;
+    private ActivityLogin _context;
+    private SharedPreferences prefs;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // get reference to this activity
+        _context = this;
+
+        // get reference to shared preferences
+        prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
+
+        try {
+            // initialize permission manager
+            PermissionsManager.init(this);
+        } catch (Exception e) {
+            // initialization already done
+        }
+
+        // set up onAuthentication change
+        setup_on_Authentication_change();
+
+//        // set up permission listeners
+//        new ActivityCompat.OnRequestPermissionsResultCallback() {
+//            @Override
+//            public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+//                Toast.makeText(_context, "Resumed", Toast.LENGTH_SHORT).show();
+//
+//                // check if all permissions are granted
+//                request_for_permissions();
+//            }
+//        };
+    }
+
+    private void setup_on_Authentication_change() {
 
         mAuth = FirebaseAuth.getInstance();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
+
                 if (user != null) {
                     // User is signed in
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
+
+                    // request for permissions
+                    request_for_permissions();
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged:signed_out");
+
+                    // setup layout
+                    setupLayout();
                 }
             }
         };
+    }
 
+    private void setupLayout() {
         // set layout
         setContentView(R.layout.activity_login);
-
-        if (savedInstanceState == null) {
-//            Firebase.setAndroid;
-        }
 
         // set flag for  login/register
         existingUser = true;
@@ -71,16 +112,34 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
         txt_confirm_email = (EditText) findViewById(R.id.txt_confirm_email);
         txt_password = (EditText) findViewById(R.id.txt_password);
 
-        cnt_confirm_password = (EditText) findViewById(R.id.cnt_confirm_password);
+        cnt_confirm_password = (TextInputLayout) findViewById(R.id.cnt_confirm_password);
 
         btn_login = (Button) findViewById(R.id.btn_login);
         btn_signup = (Button) findViewById(R.id.btn_signup);
 
-        btn_login.setOnClickListener(this);
-        btn_signup.setOnClickListener(this);
+        btn_login.setOnClickListener(_context);
+        btn_signup.setOnClickListener(_context);
 
         // request focus
-        btn_login.requestFocus();
+        btn_signup.requestFocus();
+    }
+
+    private void request_for_permissions() {
+        // request for camera
+        if (!PermissionsManager.get().isCameraGranted()) {
+            PermissionsManager.get().requestCameraPermission(this);
+        } else {
+            // request for location
+            if (!PermissionsManager.get().isLocationGranted()) {
+                PermissionsManager.get().requestLocationPermission(this);
+            } else {
+                // close activity
+                finish();
+
+                // start home
+                startActivity(new Intent(getBaseContext(), ActivityHome.class));
+            }
+        }
     }
 
     public void log_in_user(String email, String password) {
@@ -94,26 +153,37 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            Log.w(TAG, "signInWithEmail:failed", task.getException());
+                            Log.e(TAG, "signInWithEmail:failed", task.getException());
                             Toast.makeText(getBaseContext(), "Login failed!",
                                     Toast.LENGTH_SHORT).show();
                         } else {
                             // get user
                             FirebaseUser user = task.getResult().getUser();
-                            // get email
-                            String user_email = user.getEmail();
-                            String user_name = user.getDisplayName();
-                            String user_id = user.getUid();
+                            // Name, email address, and profile photo Url
+                            String name = user.getDisplayName();
+                            String email = user.getEmail();
+                            Uri photoUrl = user.getPhotoUrl();
 
-                            Log.i("Gdane", "Email: " + user_email);
-                            Log.i("Gdane", "Name: " + user_name);
-                            Log.i("Gdane", "ID: " + user_id);
+                            String ui = user.getUid();
+
+                            Log.i("Kibet", "+++++++++++++++++++++++++++++++++");
+                            Log.i("Kibet", "UID: " + ui);
+                            Log.i("Kibet", "Name: " + name);
+                            Log.i("Kibet", "Email: " + email);
+                            Log.i("Kibet", "Photo: " + photoUrl);
+                            Log.i("Kibet", "+++++++++++++++++++++++++++++++++");
 
                             SharedPreferences prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
 
                             //prefs = PreferenceManager.getDefaultSharedPreferences(this);
                             SharedPreferences.Editor editor = prefs.edit();
-                            editor.putString("email", user_email);
+                            editor.putString("email", email);
+                            editor.commit();
+
+                            // get user_id to test if session exists
+                            String logged_in_user_email = prefs.getString("email", "");
+
+                            Log.e("Kibet", "logged_in_user_email: " + logged_in_user_email);
                         }
                     }
                 });
@@ -150,40 +220,47 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
 
                 if (existingUser) {
                     // validate credentials
-                    validate_sign_in_credentials(email, password);
+                    if (!validate_sign_in_credentials(email, password)) {
+                        return;
+                    }
+
                     // try user login
                     log_in_user(email, password);
                 } else {
                     // validate credentials
-                    validate_sign_up_credentials(email, confirm_email, password);
+                    if (!validate_sign_up_credentials(email, confirm_email, password)) {
+                        return;
+                    }
                     // try user login
                     create_new_user(email, password);
                 }
-
-                // hide confirm password
-                cnt_confirm_password.setVisibility(View.GONE);
-                // change title
-                lbl_login_title.setText("Login");
-                // change button text
-                btn_login.setText("Sign in");
 
                 break;
 
             case R.id.btn_signup:
 
-                // unhide confirm password
-                cnt_confirm_password.setVisibility(View.VISIBLE);
-                // change title
-                lbl_login_title.setText("Create Account");
-                // change button text
-                btn_login.setText("Sign up");
-                btn_signup.setText("Have an account? Login");
-                // change new user flag
                 if (existingUser) {
-                    existingUser = false;
+                    // unhide confirm password
+                    cnt_confirm_password.setVisibility(View.VISIBLE);
+                    // change title
+                    lbl_login_title.setText("Create Account");
+
+                    // change button text
+                    btn_login.setText("Sign up");
+                    btn_signup.setText("Have an account? Login");
                 } else {
-                    existingUser = true;
+                    // unhide confirm password
+                    cnt_confirm_password.setVisibility(View.GONE);
+                    // change title
+                    lbl_login_title.setText("Login");
+
+                    // change button text
+                    btn_login.setText("Sign in");
+                    btn_signup.setText("New? Create account...");
                 }
+
+                // change new user flag
+                existingUser = !existingUser;
 
                 break;
         }
