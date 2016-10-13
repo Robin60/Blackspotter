@@ -8,7 +8,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.DatabaseError;
@@ -44,8 +43,6 @@ public class AddPointOnline extends IntentService {
 
         // get point
         new_point = data.getParcelable("new_point");
-
-        Toast.makeText(this, "Received: " + new_point.getPostedBy(), Toast.LENGTH_SHORT).show();
 
         // prepare url
         String url = "http://ws.geonames.org/countryCode?lat=" + new_point.getLatitude() +

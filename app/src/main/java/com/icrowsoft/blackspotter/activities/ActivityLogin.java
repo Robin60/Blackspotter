@@ -40,7 +40,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     private boolean existingUser;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private EditText txt_confirm_email;
+    private EditText txt_confirm_password;
     private Button btn_signup;
     private TextInputLayout cnt_confirm_password;
     private ActivityLogin _context;
@@ -119,7 +119,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
 
         lbl_login_title = (TextView) findViewById(R.id.lbl_login_title);
         txt_email = (EditText) findViewById(R.id.txt_email);
-        txt_confirm_email = (EditText) findViewById(R.id.txt_confirm_email);
+        txt_confirm_password = (EditText) findViewById(R.id.txt_confirm_password);
         txt_password = (EditText) findViewById(R.id.txt_password);
 
         cnt_confirm_password = (TextInputLayout) findViewById(R.id.cnt_confirm_password);
@@ -232,10 +232,42 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                         // the auth state listener will be notified and logic to handle the
                         // signed in user can be handled in the listener.
                         if (!task.isSuccessful()) {
-                            Toast.makeText(getBaseContext(), "Sign up failed!",
-                                    Toast.LENGTH_SHORT).show();
+                            // get error message
+                            String error = task.getException().getMessage();
+
+                            Log.e(TAG, "Error msg: " + task.getException().getMessage());
+
+                            String err_message = "Unknown error";
+                            if (error.startsWith("The email address is already in use by another account")) {
+                                err_message = "Email already in use";
+                            }
+
+                            Toast myToast = Toast.makeText(getBaseContext(), err_message, Toast.LENGTH_LONG);
+                            myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
+                            myToast.show();
                         } else {
-                            // // TODO: 11/10/2016  save user to preferences
+                            // get user
+                            FirebaseUser user = task.getResult().getUser();
+                            // Name, email address, and profile photo Url
+                            String name = user.getDisplayName();
+                            String email = user.getEmail();
+                            Uri photoUrl = user.getPhotoUrl();
+
+                            String ui = user.getUid();
+
+                            Log.i("Kibet", "+++++++++++++++++++++++++++++++++");
+                            Log.i("Kibet", "UID: " + ui);
+                            Log.i("Kibet", "Name: " + name);
+                            Log.i("Kibet", "Email: " + email);
+                            Log.i("Kibet", "Photo: " + photoUrl);
+                            Log.i("Kibet", "+++++++++++++++++++++++++++++++++");
+
+                            SharedPreferences prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
+
+                            //prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                            SharedPreferences.Editor editor = prefs.edit();
+                            editor.putString("email", email);
+                            editor.commit();
                         }
 
                         //close dialog
@@ -250,7 +282,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
             case R.id.btn_login:
                 // get credentials
                 String email = txt_email.getText().toString();
-                String confirm_email = txt_confirm_email.getText().toString();
+                String confirm_password = txt_confirm_password.getText().toString();
                 String password = txt_password.getText().toString();
 
                 if (existingUser) {
@@ -263,7 +295,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                     log_in_user(email, password);
                 } else {
                     // validate credentials
-                    if (!validate_sign_up_credentials(email, confirm_email, password)) {
+                    if (!validate_sign_up_credentials(email, confirm_password, password)) {
                         return;
                     }
                     // try user login
@@ -338,17 +370,17 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
             txt_password.requestFocus();
             return false;
         }
-//        // check if valid mail
-//        if(!isValidPassword(password)){
-//            txt_password.setError("Invalid");
-//            Snackbar.make(txt_password, "Password should be 5 characters", Snackbar.LENGTH_SHORT).show();
-//            txt_password.requestFocus();
-//            return false;
-//        }
+        // check if valid password
+        if(!isValidPassword(password)){
+            txt_password.setError("Invalid");
+            Snackbar.make(txt_password, "Password less than 6 characters", Snackbar.LENGTH_SHORT).show();
+            txt_password.requestFocus();
+            return false;
+        }
         return true;
     }
 
-    private boolean validate_sign_up_credentials(String email, String confirm_email, String password) {
+    private boolean validate_sign_up_credentials(String email, String confirm_password, String password) {
         // check for blanks
         if (TextUtils.isEmpty(email)) {
             txt_email.setError("Required");
@@ -365,42 +397,44 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
         }
 
         // check for blanks
-        if (TextUtils.isEmpty(confirm_email)) {
-            txt_confirm_email.setError("Required");
-            Snackbar.make(txt_confirm_email, "Confirm email", Snackbar.LENGTH_SHORT).show();
-            txt_confirm_email.requestFocus();
-            return false;
-        }
-        // check if valid mail
-        if (!isValidEmail(confirm_email)) {
-            txt_confirm_email.setError("Invalid");
-            Snackbar.make(txt_confirm_email, "Enter a valid email", Snackbar.LENGTH_SHORT).show();
-            txt_confirm_email.requestFocus();
-            return false;
-        }
-
-        // check for mail match
-        if (!confirm_email.equals(email)) {
-            txt_confirm_email.setError("Mismatch");
-            Snackbar.make(txt_confirm_email, "Emails do not match", Snackbar.LENGTH_SHORT).show();
-            txt_confirm_email.requestFocus();
-            return false;
-        }
-
-        // check for blanks
         if (TextUtils.isEmpty(password)) {
             txt_password.setError("Required");
             Snackbar.make(txt_password, "Type a password", Snackbar.LENGTH_SHORT).show();
             txt_password.requestFocus();
             return false;
         }
-        // check if valid mail
+        // check if valid password
         if (!isValidPassword(password)) {
             txt_password.setError("Invalid");
-            Snackbar.make(txt_password, "Password should be 5 characters", Snackbar.LENGTH_SHORT).show();
+            Snackbar.make(txt_password, "Password less than 6 characters", Snackbar.LENGTH_SHORT).show();
             txt_password.requestFocus();
             return false;
         }
+
+        // check for blanks
+        if (TextUtils.isEmpty(confirm_password)) {
+            txt_confirm_password.setError("Required");
+            Snackbar.make(txt_confirm_password, "Confirm password", Snackbar.LENGTH_SHORT).show();
+            txt_confirm_password.requestFocus();
+            return false;
+        }
+        // check if valid password
+        if (!isValidPassword(confirm_password)) {
+            txt_confirm_password.setError("Invalid");
+            Snackbar.make(txt_confirm_password, "Password less than 6 characters", Snackbar.LENGTH_SHORT).show();
+            txt_confirm_password.requestFocus();
+            return false;
+        }
+
+        // check for mail match
+        if (!confirm_password.equals(password)) {
+            txt_confirm_password.setError("Mismatch");
+            Snackbar.make(txt_confirm_password, "Passwords do not match", Snackbar.LENGTH_SHORT).show();
+            txt_confirm_password.setText("");
+            txt_confirm_password.requestFocus();
+            return false;
+        }
+
         return true;
     }
 
@@ -413,6 +447,6 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     }
 
     public final static boolean isValidPassword(CharSequence target) {
-        return target.length() == 5;
+        return target.length() >5;
     }
 }

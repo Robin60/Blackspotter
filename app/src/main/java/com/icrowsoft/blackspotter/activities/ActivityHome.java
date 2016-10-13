@@ -1024,6 +1024,13 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
                 startActivity(new Intent(getBaseContext(), ActivityCharts.class));
                 break;
             case R.id.cmd_logout:
+                SharedPreferences prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
+
+                //prefs = PreferenceManager.getDefaultSharedPreferences(this);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("email", "admin@blackspotter.com");
+                editor.commit();
+
                 FirebaseAuth.getInstance().signOut();
                 finish();
                 startActivity(new Intent(getBaseContext(), ActivityLogin.class));
