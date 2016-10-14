@@ -371,7 +371,7 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
             return false;
         }
         // check if valid password
-        if(!isValidPassword(password)){
+        if (!isValidPassword(password)) {
             txt_password.setError("Invalid");
             Snackbar.make(txt_password, "Password less than 6 characters", Snackbar.LENGTH_SHORT).show();
             txt_password.requestFocus();
@@ -447,6 +447,6 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     }
 
     public final static boolean isValidPassword(CharSequence target) {
-        return target.length() >5;
+        return target.length() > 5;
     }
 }
