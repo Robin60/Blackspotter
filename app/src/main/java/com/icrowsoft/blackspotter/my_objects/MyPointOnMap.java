@@ -150,7 +150,7 @@ public class MyPointOnMap implements Parcelable {
     }
 
     // Parcelling part
-    public MyPointOnMap(Parcel in){
+    public MyPointOnMap(Parcel in) {
         String[] data = new String[11];
 
         in.readStringArray(data);
@@ -175,7 +175,7 @@ public class MyPointOnMap implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
-        dest.writeStringArray(new String[] {this._name,this._lat,this._lon,this._cases+"",this._last_modified,this._country,this._description,this._cause,this._photo,this._firebase_key,this._postedBy});
+        dest.writeStringArray(new String[]{this._name, this._lat, this._lon, this._cases + "", this._last_modified, this._country, this._description, this._cause, this._photo, this._firebase_key, this._postedBy});
     }
 
     public static final Parcelable.Creator CREATOR = new Parcelable.Creator() {
