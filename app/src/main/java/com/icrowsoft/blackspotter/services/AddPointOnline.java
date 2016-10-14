@@ -88,7 +88,7 @@ public class AddPointOnline extends IntentService {
                             new_point.setFirebaseKey(databaseReference.getKey());
 
                             // save point to local DB
-                            new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(new_point, false);
+                            new BlackspotDBHandler(getBaseContext()).addMyPointOnMap(new_point, false);
 
                             // add to PHP
                             new AddPointToPHP().addPoint(getBaseContext(), new_point);
@@ -127,8 +127,8 @@ public class AddPointOnline extends IntentService {
                 Log.e("Kibet", "Error encrypting: " + e.getMessage());
             }
         } else {
-//            // send broadcast to notify no internet
-//            sendBroadcast(new Intent("NOTIFY_NO_INTERNET"));
+            // send broadcast to notify no internet
+            sendBroadcast(new Intent("NOTIFY_NO_INTERNET"));
         }
     }
 
@@ -265,7 +265,7 @@ public class AddPointOnline extends IntentService {
                                 new_point.setFirebaseKey(databaseReference.getKey());
 
                                 // save point to local DB
-                                new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(new_point, false);
+                                new BlackspotDBHandler(getBaseContext()).addMyPointOnMap(new_point, false);
 
                                 // send broadcast to re-add markers
                                 getBaseContext().sendBroadcast(new Intent("REFRESH_MARKERS"));

@@ -2,7 +2,9 @@ package com.icrowsoft.blackspotter.SyncDB;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.util.Log;
 import android.view.View;
@@ -10,6 +12,7 @@ import android.view.View;
 import com.google.android.gms.maps.GoogleMap;
 import com.icrowsoft.blackspotter.R;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
+import com.icrowsoft.blackspotter.services.AddPointOffline;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
 import java.util.List;
@@ -23,7 +26,6 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
     private final GoogleMap _map;
     private final Handler _handler;
     private final View _fab;
-    private BlackspotDBHandler my_db;
 
     public sync_DB_offline(Context context, Handler handler, Activity activity, GoogleMap map, View view) {
         this._context = context;
@@ -36,7 +38,7 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
     @Override
     protected String doInBackground(String... strings) {
         // get database reference
-        my_db = new BlackspotDBHandler(_context);
+        BlackspotDBHandler my_db = new BlackspotDBHandler(_context);
 
         List<MyPointOnMap> all_points = my_db.getAllPoints();
 
@@ -66,8 +68,19 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
                 my_point.setDescription("Black spot");
                 my_point.setPostedBy("admin@blackspoter.com");
 
-                // new insert
-                my_db.addMyPoinOnMap(my_point, true);
+                // create bundle
+                Bundle data = new Bundle();
+                data.putParcelable("new_point", my_point);
+
+                // create new intent
+                Intent dataIntent = new Intent(_context, AddPointOffline.class);
+                dataIntent.putExtras(data);
+
+                // start background save action
+                _context.startService(dataIntent);
+
+//                // new insert
+//                my_db.addMyPointOnMap(my_point, true);xxxx
             }
 
             // insert each danger zone
@@ -83,8 +96,19 @@ public class sync_DB_offline extends AsyncTask<String, String, String> {
                 my_point.setDescription("Danger zone");
                 my_point.setPostedBy("admin@blackspoter.com");
 
-                // new insert
-                my_db.addMyPoinOnMap(my_point, true);
+                // create bundle
+                Bundle data = new Bundle();
+                data.putParcelable("new_point", my_point);
+
+                // create new intent
+                Intent dataIntent = new Intent(_context, AddPointOffline.class);
+                dataIntent.putExtras(data);
+
+                // start background save action
+                _context.startService(dataIntent);
+
+//                // new insert
+//                my_db.addMyPointOnMap(my_point, true);xxxx
             }
 
             // fetch online

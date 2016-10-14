@@ -97,7 +97,7 @@
 //                                    new_point.setFirebaseKey(databaseReference.getKey());
 //
 //                                    // save point to local DB
-//                                    new BlackspotDBHandler(_context).addMyPoinOnMap(new_point, false);
+//                                    new BlackspotDBHandler(_context).addMyPointOnMap(new_point, false);
 //
 //                                    // add to PHP
 //                                    new AddPointToPHP().addPoint(_context, new_point);
@@ -270,7 +270,7 @@
 //                                        new_point.setFirebaseKey(databaseReference.getKey());
 //
 //                                        // save point to local DB
-//                                        new BlackspotDBHandler(_context).addMyPoinOnMap(new_point, false);
+//                                        new BlackspotDBHandler(_context).addMyPointOnMap(new_point, false);
 //
 //                                        // send broadcast to re-add markers
 //                                        _context.sendBroadcast(new Intent("REFRESH_MARKERS"));

@@ -34,8 +34,6 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
 
     @Override
     protected String doInBackground(String... strings) {
-        // get database reference
-        BlackspotDBHandler my_db = new BlackspotDBHandler(_context);
 
         // clear all markers on map
         _activity.runOnUiThread(new Runnable() {
@@ -45,6 +43,9 @@ public class AddMarkersToMap extends AsyncTask<String, String, String> {
                 _map.clear();
             }
         });
+
+        // get database reference
+        BlackspotDBHandler my_db = new BlackspotDBHandler(_context);
 
         // fetch all points from DB
         List<MyPointOnMap> all_points = my_db.getAllPoints();

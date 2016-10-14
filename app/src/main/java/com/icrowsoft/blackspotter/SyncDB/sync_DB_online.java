@@ -17,6 +17,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.icrowsoft.blackspotter.my_objects.MyPointOnMap;
+import com.icrowsoft.blackspotter.services.AddPointOffline;
 import com.icrowsoft.blackspotter.services.AddPointOnline;
 import com.icrowsoft.blackspotter.sqlite_db.BlackspotDBHandler;
 
@@ -117,12 +118,23 @@ public class sync_DB_online extends AsyncTask<String, String, String> {
                                             my_point.setCause(countrySnapshot.child("cause").getValue().toString());
                                             my_point.setPhoto(countrySnapshot.child("photo").getValue().toString());
                                             my_point.setFirebaseKey(firebase_key);
-//                                            new_point.setPostedBy();//todo xxxx
+                                            my_point.setPostedBy(countrySnapshot.child("postedBy").getValue().toString());
 
                                             Log.e("Kibet", "Saving -- " + countrySnapshot.child("name").getValue().toString());
 
-                                            // insert new points to DB
-                                            new BlackspotDBHandler(_context).addMyPoinOnMap(my_point, false);
+                                            // create bundle
+                                            Bundle data = new Bundle();
+                                            data.putParcelable("new_point", my_point);
+
+                                            // create new intent
+                                            Intent dataIntent = new Intent(_context, AddPointOffline.class);
+                                            dataIntent.putExtras(data);
+
+                                            // start background save action
+                                            _context.startService(dataIntent);
+
+//                                            // insert new points to DB
+//                                            new BlackspotDBHandler(_context).addMyPointOnMap(my_point, false);
                                         }
                                     }
 

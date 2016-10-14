@@ -48,6 +48,18 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
     private MaterialDialog.Builder dialog_builder;
     private MaterialDialog progress_dialog;
 
+    public final static boolean isValidEmail(CharSequence target) {
+        if (target == null) {
+            return false;
+        } else {
+            return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
+        }
+    }
+
+    public final static boolean isValidPassword(CharSequence target) {
+        return target.length() > 5;
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -177,6 +189,10 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                                 err_message = "Unknown user";
                             }
 
+                            if (error.startsWith("A network error")) {
+                                err_message = "Network failed";
+                            }
+
                             Toast myToast = Toast.makeText(getBaseContext(), err_message, Toast.LENGTH_LONG);
                             myToast.setGravity(Gravity.CENTER_HORIZONTAL | Gravity.CENTER_VERTICAL, 0, 0);
                             myToast.show();
@@ -240,6 +256,10 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
                             String err_message = "Unknown error";
                             if (error.startsWith("The email address is already in use by another account")) {
                                 err_message = "Email already in use";
+                            }
+
+                            if (error.startsWith("A network error")) {
+                                err_message = "Network failed";
                             }
 
                             Toast myToast = Toast.makeText(getBaseContext(), err_message, Toast.LENGTH_LONG);
@@ -436,17 +456,5 @@ public class ActivityLogin extends AppCompatActivity implements View.OnClickList
         }
 
         return true;
-    }
-
-    public final static boolean isValidEmail(CharSequence target) {
-        if (target == null) {
-            return false;
-        } else {
-            return android.util.Patterns.EMAIL_ADDRESS.matcher(target).matches();
-        }
-    }
-
-    public final static boolean isValidPassword(CharSequence target) {
-        return target.length() >5;
     }
 }

@@ -82,7 +82,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
      * All CRUD(Create, Read, Update, Delete) Operations
      */
     // Adding new blackspot
-    public void addMyPoinOnMap(MyPointOnMap my_point, boolean by_pass_check) {
+    public void addMyPointOnMap(MyPointOnMap my_point, boolean by_pass_check) {
         try {
             // check if duplicate
             boolean found = doesPointExist(my_point.getLatitude(), my_point.getLongitude());
@@ -118,7 +118,7 @@ public class BlackspotDBHandler extends SQLiteOpenHelper {
             // Closing database connection
             db.close();
         } catch (SQLiteDatabaseLockedException e) {
-            Log.e("Kibet", "DB locked");
+            Log.e("Kibet", "DB locked: " + e.getMessage());
         }
     }
 

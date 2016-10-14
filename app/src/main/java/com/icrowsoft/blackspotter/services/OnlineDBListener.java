@@ -2,8 +2,8 @@ package com.icrowsoft.blackspotter.services;
 
 import android.app.Service;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -31,11 +31,6 @@ public class OnlineDBListener extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
-        SharedPreferences prefs = getSharedPreferences("LoggedInUsersPrefs", 0);
-
-        // get user_id to test if session exists
-        String logged_in_user_email = prefs.getString("email", "");
 
         final DatabaseReference online_DB = FirebaseDatabase.getInstance().getReference();
 
@@ -71,13 +66,32 @@ public class OnlineDBListener extends Service {
                         my_point.setFirebaseKey(firebase_key);
                         my_point.setPostedBy(dataSnapshot.child("postedBy").getValue().toString());
 
-                        // insert new points to DB
-                        new BlackspotDBHandler(getBaseContext()).addMyPoinOnMap(my_point, false);
-//                        }
+                        // create bundle
+                        Bundle data = new Bundle();
+                        data.putParcelable("new_point", my_point);
 
-                        // send broadcast
-                        sendBroadcast(new Intent("REFRESH_MARKERS"));
+                        // create new intent
+                        Intent dataIntent = new Intent(getBaseContext(), AddPointOffline.class);
+                        dataIntent.putExtras(data);
+
+                        // start background save action
+                        startService(dataIntent);
+
+
+//                        // insert new points to DB
+//                        new BlackspotDBHandler(getBaseContext()).addMyPointOnMap(my_point, false);
+////                        }
+//
+//                        // send broadcast
+//                        sendBroadcast(new Intent("REFRESH_MARKERS"));
                         return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void aVoid) {
+                        super.onPostExecute(aVoid);
+                        // do garbage collect
+                        System.gc();
                     }
                 }.execute();
             }

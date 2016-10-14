@@ -95,15 +95,15 @@ import java.util.Locale;
 
 public class ActivityHome extends AppCompatActivity implements OnMapReadyCallback, GoogleMap.OnInfoWindowClickListener, View.OnClickListener {
 
+    private static final int CAMERA_REQUEST_CODE = 999;
+    private static final int VOICE_REQUEST_CODE = 777;
+    private static final int PLACE_PICKER_REQUEST_CODE = 888;
     private GoogleMap mMap;
     private Animation fab_close;
     private Animation fab_open;
     private FloatingActionButton fab_fullscreen;
     private boolean fab_add_new_clicked;
     private FrameLayout mInterceptorFrame;
-    private static final int CAMERA_REQUEST_CODE = 999;
-    private static final int VOICE_REQUEST_CODE = 777;
-    private static final int PLACE_PICKER_REQUEST_CODE = 888;
     private TextView lbl_accuracy;
     private View warning_dot;
     private Polyline current_polyline;
@@ -302,19 +302,19 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
         intentFilter.addAction("REFRESH_MARKERS");
         registerReceiver(refresh_markers_listener, intentFilter);
 
-//        // Listener for no internet
-//        BroadcastReceiver no_internet_listener = new BroadcastReceiver() {
-//            @Override
-//            public void onReceive(Context context, Intent intent) {
-//                // show error
-//                Snackbar.make(fab_speak, "Internet connection failed!", Snackbar.LENGTH_LONG).show();
-//            }
-//        };
-//
-//        // register receiver
-//        intentFilter = new IntentFilter();
-//        intentFilter.addAction("REFRESH_MARKERS");
-//        registerReceiver(no_internet_listener, intentFilter);
+        // Listener for no internet
+        BroadcastReceiver no_internet_listener = new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                // show error
+                Snackbar.make(fab_speak, "Internet connection failed!", Snackbar.LENGTH_LONG).show();
+            }
+        };
+
+        // register receiver
+        intentFilter = new IntentFilter();
+        intentFilter.addAction("NOTIFY_NO_INTERNET");
+        registerReceiver(no_internet_listener, intentFilter);
     }
 
     /**
@@ -486,228 +486,6 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
 //        } catch (ProviderException ex) {
 //            Log.e("Kibet", "Error: Cell tower not available");
 //        }
-    }
-
-    // Fetches data from url passed
-    private class DownloadTask extends AsyncTask<String, Void, String> {
-
-        // Downloading data in non-ui thread
-        @Override
-        protected String doInBackground(String... url) {
-
-            // For storing data from web service
-            String data = "";
-
-            try {
-                // Fetching the data from web service
-                data = downloadUrl(url[0]);
-            } catch (Exception e) {
-                Log.d("Background Task", e.toString());
-            }
-
-            Log.i("Kibet", "Direct JSON >> " + data);// TODO: 8/8/16  delete
-
-            return data;
-        }
-
-        // Executes in UI thread, after the execution of
-        // doInBackground()
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            ParserTask parserTask = new ParserTask();
-
-            // Invokes the thread for parsing the JSON data
-            parserTask.execute(result);
-        }
-
-        /**
-         * A method to download json data from url
-         */
-        private String downloadUrl(String strUrl) throws IOException {
-            String data = "";
-            InputStream iStream = null;
-            HttpURLConnection urlConnection = null;
-            try {
-                URL url = new URL(strUrl);
-
-                // Creating an http connection to communicate with url
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                // Connecting to url
-                urlConnection.connect();
-
-                // Reading data from url
-                iStream = urlConnection.getInputStream();
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-                StringBuffer sb = new StringBuffer();
-
-                String line = "";
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                data = sb.toString();
-
-                br.close();
-
-            } catch (Exception e) {
-                Log.d("Exception", e.toString());
-            } finally {
-                iStream.close();
-                urlConnection.disconnect();
-            }
-            return data;
-        }
-    }
-
-    /**
-     * A class to parse the Google Places in JSON format
-     */
-    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
-
-        // Parsing the data in non-ui thread
-        @Override
-        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
-
-            Log.i("Kibet", jsonData.toString());
-
-            JSONObject jObject;
-            List<List<HashMap<String, String>>> routes = null;
-
-            try {
-                jObject = new JSONObject(jsonData[0]);
-                DirectionsJSONParser parser = new DirectionsJSONParser();
-
-                // Starts parsing data
-                routes = parser.parse(jObject);
-            } catch (Exception e) {
-                Log.i("Kibet", "Error parsing google places: " + e.getMessage());
-                e.printStackTrace();
-            }
-            return routes;
-        }
-
-        // Executes in UI thread, after the parsing process
-        @Override
-        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
-            Log.i("Kibet", "RESULT >> " + result.toString());
-            if (!(result.size() > 0)) {
-                Snackbar.make(fab_add_new, "No Start OR API Quota Reached", Snackbar.LENGTH_LONG).show();
-            } else {
-
-                ArrayList<LatLng> points = null;
-                PolylineOptions lineOptions = null;
-                MarkerOptions markerOptions = new MarkerOptions();
-
-                // Traversing through all the routes
-                for (int i = 0; i < result.size(); i++) {
-                    points = new ArrayList<>();
-                    lineOptions = new PolylineOptions();
-
-                    // Fetching i-th route
-                    List<HashMap<String, String>> path = result.get(i);
-
-                    // Fetching all the points in i-th route
-                    for (int j = 0; j < path.size(); j++) {
-                        HashMap<String, String> point = path.get(j);
-
-                        double lat = Double.parseDouble(point.get("lat"));
-                        double lng = Double.parseDouble(point.get("lng"));
-                        LatLng position = new LatLng(lat, lng);
-
-                        points.add(position);
-                    }
-
-                    // Adding all the points in the route to LineOptions
-                    lineOptions.addAll(points);
-                    lineOptions.width(10);
-                    lineOptions.color(Color.BLUE);
-                }
-
-                // remove any polyline on the map
-                if (current_polyline != null) {
-                    current_polyline.remove();
-                }
-
-                // Drawing polyline in the Google Map for the i-th route
-                current_polyline = mMap.addPolyline(lineOptions);
-                //// TODO: 7/29/16 add a marker to the destination
-
-                // check if any point lies on the path
-                getBlackspotsOnPath(points);
-
-                // zoom map to show path
-                auto_zoom_map_to_show_path(points);
-            }
-        }
-
-        private void auto_zoom_map_to_show_path(final ArrayList<LatLng> points) {
-            my_activity.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
-                    // add all points on polyline
-                    for (LatLng item : points) {
-                        builder.include(item);
-                    }
-
-                    LatLngBounds bounds = builder.build();
-
-                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 50);
-                    mMap.animateCamera(cu);
-                }
-            });
-        }
-
-        /**
-         * Computes whether the given point lies on or near a polyline, within a specified
-         * tolerance in meters. The polyline is composed of great circle segments if geodesic
-         * is true, and of Rhumb segments otherwise. The polyline is not closed -- the closing
-         * segment between the first point and the last point is not included.
-         */
-        public void getBlackspotsOnPath(List<LatLng> polyline_points) {
-            // set distance to road of points
-            double tolerance = 1000; // meters
-
-            // initialize counters
-            int blackspot_count = 0;
-            int accident_scene_count = 0;
-            int danger_zone_count = 0;
-
-            for (int i = 0; i < all_points.size(); i++) {
-                // get point reference
-                MyPointOnMap my_point = all_points.get(i);
-
-                // get description
-                String description = my_point.getDescription();
-
-                // generate LatLng
-                LatLng latlong = new LatLng(Double.parseDouble(my_point.getLatitude()), Double.parseDouble(my_point.getLongitude()));
-
-                // check if location is on map
-                boolean isLocationOnPath = PolyUtil.isLocationOnPath(latlong, polyline_points, true, tolerance);
-
-                if (isLocationOnPath) {
-
-                    // know the type of point we are dealing with
-                    if (description.equals("Black spot")) {
-                        blackspot_count += 1;
-                    } else if (description.equals("Danger zone")) {
-                        danger_zone_count += 1;
-                    } else if (description.equals("Accident scene")) {
-                        accident_scene_count += 1;
-                    }
-                }
-            }
-            // update UI
-            lbl_blackspots.setText("B-S: " + blackspot_count);
-            lbl_accidents.setText("A-S: " + accident_scene_count);
-            lbl_danger_zones.setText("D-Z: " + danger_zone_count);
-        }
     }
 
     public void animateFAB() {
@@ -1313,6 +1091,228 @@ public class ActivityHome extends AppCompatActivity implements OnMapReadyCallbac
             }
         }
         return false;
+    }
+
+    // Fetches data from url passed
+    private class DownloadTask extends AsyncTask<String, Void, String> {
+
+        // Downloading data in non-ui thread
+        @Override
+        protected String doInBackground(String... url) {
+
+            // For storing data from web service
+            String data = "";
+
+            try {
+                // Fetching the data from web service
+                data = downloadUrl(url[0]);
+            } catch (Exception e) {
+                Log.d("Background Task", e.toString());
+            }
+
+            Log.i("Kibet", "Direct JSON >> " + data);// TODO: 8/8/16  delete
+
+            return data;
+        }
+
+        // Executes in UI thread, after the execution of
+        // doInBackground()
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+
+            ParserTask parserTask = new ParserTask();
+
+            // Invokes the thread for parsing the JSON data
+            parserTask.execute(result);
+        }
+
+        /**
+         * A method to download json data from url
+         */
+        private String downloadUrl(String strUrl) throws IOException {
+            String data = "";
+            InputStream iStream = null;
+            HttpURLConnection urlConnection = null;
+            try {
+                URL url = new URL(strUrl);
+
+                // Creating an http connection to communicate with url
+                urlConnection = (HttpURLConnection) url.openConnection();
+
+                // Connecting to url
+                urlConnection.connect();
+
+                // Reading data from url
+                iStream = urlConnection.getInputStream();
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
+
+                StringBuffer sb = new StringBuffer();
+
+                String line = "";
+                while ((line = br.readLine()) != null) {
+                    sb.append(line);
+                }
+
+                data = sb.toString();
+
+                br.close();
+
+            } catch (Exception e) {
+                Log.d("Exception", e.toString());
+            } finally {
+                iStream.close();
+                urlConnection.disconnect();
+            }
+            return data;
+        }
+    }
+
+    /**
+     * A class to parse the Google Places in JSON format
+     */
+    private class ParserTask extends AsyncTask<String, Integer, List<List<HashMap<String, String>>>> {
+
+        // Parsing the data in non-ui thread
+        @Override
+        protected List<List<HashMap<String, String>>> doInBackground(String... jsonData) {
+
+            Log.i("Kibet", jsonData.toString());
+
+            JSONObject jObject;
+            List<List<HashMap<String, String>>> routes = null;
+
+            try {
+                jObject = new JSONObject(jsonData[0]);
+                DirectionsJSONParser parser = new DirectionsJSONParser();
+
+                // Starts parsing data
+                routes = parser.parse(jObject);
+            } catch (Exception e) {
+                Log.i("Kibet", "Error parsing google places: " + e.getMessage());
+                e.printStackTrace();
+            }
+            return routes;
+        }
+
+        // Executes in UI thread, after the parsing process
+        @Override
+        protected void onPostExecute(List<List<HashMap<String, String>>> result) {
+            Log.i("Kibet", "RESULT >> " + result.toString());
+            if (!(result.size() > 0)) {
+                Snackbar.make(fab_add_new, "No Start OR API Quota Reached", Snackbar.LENGTH_LONG).show();
+            } else {
+
+                ArrayList<LatLng> points = null;
+                PolylineOptions lineOptions = null;
+                MarkerOptions markerOptions = new MarkerOptions();
+
+                // Traversing through all the routes
+                for (int i = 0; i < result.size(); i++) {
+                    points = new ArrayList<>();
+                    lineOptions = new PolylineOptions();
+
+                    // Fetching i-th route
+                    List<HashMap<String, String>> path = result.get(i);
+
+                    // Fetching all the points in i-th route
+                    for (int j = 0; j < path.size(); j++) {
+                        HashMap<String, String> point = path.get(j);
+
+                        double lat = Double.parseDouble(point.get("lat"));
+                        double lng = Double.parseDouble(point.get("lng"));
+                        LatLng position = new LatLng(lat, lng);
+
+                        points.add(position);
+                    }
+
+                    // Adding all the points in the route to LineOptions
+                    lineOptions.addAll(points);
+                    lineOptions.width(10);
+                    lineOptions.color(Color.BLUE);
+                }
+
+                // remove any polyline on the map
+                if (current_polyline != null) {
+                    current_polyline.remove();
+                }
+
+                // Drawing polyline in the Google Map for the i-th route
+                current_polyline = mMap.addPolyline(lineOptions);
+                //// TODO: 7/29/16 add a marker to the destination
+
+                // check if any point lies on the path
+                getBlackspotsOnPath(points);
+
+                // zoom map to show path
+                auto_zoom_map_to_show_path(points);
+            }
+        }
+
+        private void auto_zoom_map_to_show_path(final ArrayList<LatLng> points) {
+            my_activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    LatLngBounds.Builder builder = new LatLngBounds.Builder();
+                    // add all points on polyline
+                    for (LatLng item : points) {
+                        builder.include(item);
+                    }
+
+                    LatLngBounds bounds = builder.build();
+
+                    CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, 50);
+                    mMap.animateCamera(cu);
+                }
+            });
+        }
+
+        /**
+         * Computes whether the given point lies on or near a polyline, within a specified
+         * tolerance in meters. The polyline is composed of great circle segments if geodesic
+         * is true, and of Rhumb segments otherwise. The polyline is not closed -- the closing
+         * segment between the first point and the last point is not included.
+         */
+        public void getBlackspotsOnPath(List<LatLng> polyline_points) {
+            // set distance to road of points
+            double tolerance = 1000; // meters
+
+            // initialize counters
+            int blackspot_count = 0;
+            int accident_scene_count = 0;
+            int danger_zone_count = 0;
+
+            for (int i = 0; i < all_points.size(); i++) {
+                // get point reference
+                MyPointOnMap my_point = all_points.get(i);
+
+                // get description
+                String description = my_point.getDescription();
+
+                // generate LatLng
+                LatLng latlong = new LatLng(Double.parseDouble(my_point.getLatitude()), Double.parseDouble(my_point.getLongitude()));
+
+                // check if location is on map
+                boolean isLocationOnPath = PolyUtil.isLocationOnPath(latlong, polyline_points, true, tolerance);
+
+                if (isLocationOnPath) {
+
+                    // know the type of point we are dealing with
+                    if (description.equals("Black spot")) {
+                        blackspot_count += 1;
+                    } else if (description.equals("Danger zone")) {
+                        danger_zone_count += 1;
+                    } else if (description.equals("Accident scene")) {
+                        accident_scene_count += 1;
+                    }
+                }
+            }
+            // update UI
+            lbl_blackspots.setText("B-S: " + blackspot_count);
+            lbl_accidents.setText("A-S: " + accident_scene_count);
+            lbl_danger_zones.setText("D-Z: " + danger_zone_count);
+        }
     }
 
 //    private class addMarkersToMap extends AsyncTask<String, String, String> {
