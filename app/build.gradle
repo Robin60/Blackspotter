@@ -11,6 +11,23 @@ android {
         versionCode 1
         versionName "1.0"
     }
+    productFlavors {
+        gdaneRelease {
+            applicationId "com.icrowsoft.blackspotter"
+            minSdkVersion 16
+            targetSdkVersion 24
+            versionCode 2
+            versionName "1.0.2"
+        }
+    }
+    signingConfigs {
+        playStoreRelease {
+            keyAlias 'AgriFarmApp'
+            keyPassword 'G3d@neDEV'
+            storePassword 'G3d@neDEV'
+            storeFile file('playstore-release.jks')
+        }
+    }
     buildTypes {
         release {
             minifyEnabled true
